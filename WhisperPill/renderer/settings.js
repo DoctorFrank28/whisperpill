@@ -73,10 +73,23 @@ function renderComputeStatus() {
   el.textContent = "";
 }
 
+let checkConfirmationTimer = null;
+
+// Se lo stato risultante e' identico a quello di prima (es. GPU gia' in uso
+// sia prima che dopo), il testo non cambierebbe e sembrerebbe che il
+// pulsante "Verifica" non abbia fatto nulla: mostriamo una conferma
+// esplicita per un paio di secondi, indipendentemente dall'esito.
 window.whisperPill.onComputeStatus((status) => {
+  const wasManualCheck = computeChecking;
   computeStatus = status;
   computeChecking = false;
   renderComputeStatus();
+  if (wasManualCheck) {
+    const el = byId("compute-status-note");
+    if (el.textContent) el.textContent = `✓ ${el.textContent}`;
+    clearTimeout(checkConfirmationTimer);
+    checkConfirmationTimer = setTimeout(renderComputeStatus, 2500);
+  }
 });
 
 byId("compute-check-btn").addEventListener("click", () => {
