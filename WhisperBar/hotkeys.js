@@ -133,6 +133,15 @@ class HotkeyEngine {
     this.capturing = callback;
   }
 
+  // Da chiamare quando la registrazione viene interrotta da un'azione esterna
+  // (Escape, click sulla X) mentre il tasto di attivazione e' ancora fisicamente
+  // premuto: senza questo, al rilascio l'engine chiamerebbe di nuovo onStop
+  // pur non essendo piu' in ascolto dal punto di vista dell'app.
+  forceStop() {
+    this.recording = false;
+    this.toggleArmed = true;
+  }
+
   cancelCapture() {
     this.capturing = null;
   }

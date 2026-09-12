@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld("whisperBar", {
     ipcRenderer.on("state", (_event, payload) => callback(payload));
   },
   requestClose: () => ipcRenderer.send("pill:close"),
+  requestAbort: () => ipcRenderer.send("pill:abort"),
   requestExpand: () => ipcRenderer.send("pill:expand"),
   requestCollapse: () => ipcRenderer.send("pill:collapse"),
   copyText: (text) => ipcRenderer.send("pill:copy", text),

@@ -184,6 +184,7 @@
     cursor: pointer;
     border: none;
     color: var(--text-secondary);
+    flex-shrink: 0;
   }
   .icon-btn:hover {
     background: var(--control-bg-hover);
@@ -335,6 +336,7 @@
         </div>
         <div class="wave" id="wave"></div>
         <div class="timer" id="timer">0:00</div>
+        <button class="icon-btn btn-abort" title="Annulla"><span class="icon-x"></span></button>
       </div>
       <div class="hint" id="listening-hint"></div>
     </div>
@@ -344,6 +346,7 @@
         <div class="spinner"></div>
         <div class="processing-label">Trascrizione in corso…</div>
         <div class="processing-meta">faster-whisper</div>
+        <button class="icon-btn btn-abort" title="Annulla"><span class="icon-x"></span></button>
       </div>
     </div>
 

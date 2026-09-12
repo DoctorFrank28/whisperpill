@@ -104,6 +104,10 @@ class SttBridge extends EventEmitter {
     this._send({ cmd: "stop" });
   }
 
+  abort() {
+    this._send({ cmd: "abort" });
+  }
+
   shutdown() {
     if (this.proc) {
       this._send({ cmd: "shutdown" });

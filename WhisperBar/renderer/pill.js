@@ -124,6 +124,9 @@ document.getElementById("btn-close").addEventListener("click", () => window.whis
 document.querySelectorAll(".btn-dismiss").forEach((btn) => {
   btn.addEventListener("click", () => window.whisperBar.requestClose());
 });
+document.querySelectorAll(".btn-abort").forEach((btn) => {
+  btn.addEventListener("click", () => window.whisperBar.requestAbort());
+});
 
 // Il BrowserWindow copre un'area trasparente piu' grande della pillola visibile:
 // ignoriamo i click fuori dalla card cosi' i clic raggiungono le finestre sottostanti.

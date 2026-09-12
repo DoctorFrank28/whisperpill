@@ -192,6 +192,17 @@ function endListening() {
   }, STOP_DELAY_MS);
 }
 
+// Interrompe ascolto/elaborazione in corso: la registrazione viene scartata
+// (o, se la trascrizione era gia' partita, il suo risultato verra' ignorato
+// quando arriva) e la pillola torna subito a riposo.
+function abortCurrent() {
+  clearTimeout(stopDelayTimer);
+  stopDelayTimer = null;
+  if (hotkeys) hotkeys.forceStop();
+  sttBridge.abort();
+  hidePill();
+}
+
 function activationHintText() {
   const cfg = getConfig();
   if (cfg.activationMode === "hold") return `${cfg.shortcut} tenuto premuto`;
@@ -243,6 +254,10 @@ sttBridge.on("message", (msg) => {
     case "error":
       sendPillState({ kind: "error", message: msg.message });
       scheduleAutoHide(2500);
+      break;
+    case "aborted":
+      // La UI e' gia' tornata a riposo lato Electron non appena l'utente ha
+      // chiesto l'abort; questo e' solo l'ack del backend, nessuna azione.
       break;
     case "devices":
       if (settingsWindow && !settingsWindow.isDestroyed()) {
@@ -459,6 +474,7 @@ function openSettingsWindow() {
 // ---- IPC ----
 
 ipcMain.on("pill:close", () => hidePill());
+ipcMain.on("pill:abort", () => abortCurrent());
 
 ipcMain.on("pill:expand", () => {
   if (currentState.kind === "result") {
@@ -549,7 +565,12 @@ app.whenReady().then(async () => {
     onStart: beginListening,
     onStop: endListening,
     onEscape: () => {
-      if (pillWindow && pillWindow.isVisible()) hidePill();
+      if (!pillWindow || !pillWindow.isVisible()) return;
+      if (currentState.kind === "listening" || currentState.kind === "processing") {
+        abortCurrent();
+      } else {
+        hidePill();
+      }
     },
   });
   updateHotkeyReservation();

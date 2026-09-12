@@ -8,6 +8,7 @@ Comandi in ingresso (stdin):
     {"cmd": "config", "language": "it", "model": "small", "device": null}
     {"cmd": "start"}
     {"cmd": "stop"}
+    {"cmd": "abort"}
     {"cmd": "list_devices"}
     {"cmd": "list_models"}
     {"cmd": "download_model", "model": "small"}
@@ -22,6 +23,7 @@ Eventi in uscita (stdout):
     {"event": "recording_stopped", "duration": 7.2}
     {"event": "transcribing"}
     {"event": "result", "text": "...", "words": 32, "duration": 7.2, "elapsed": 1.1, "language": "it"}
+    {"event": "aborted"}
     {"event": "error", "message": "..."}
     {"event": "devices", "list": [{"index": 0, "name": "Microfono (Realtek Audio)"}]}
     {"event": "models", "list": [{"size": "small", "downloaded": true, "approxMB": 480}, ...]}
@@ -174,6 +176,10 @@ class Service:
         self.frames = []
         self.stream = None
         self.lock = threading.Lock()
+        # Incrementato ad ogni stop/abort: una _transcribe() in corso il cui
+        # numero non corrisponde piu' a questo e' stata invalidata (abortita
+        # o superata da una registrazione successiva) e non emette risultati.
+        self.generation = 0
 
     def ensure_model(self):
         if self.model is None or self.loaded_model_size != self.model_size:
@@ -234,17 +240,38 @@ class Service:
             emit({"event": "error", "message": "Registrazione troppo breve."})
             return
 
-        threading.Thread(target=self._transcribe, args=(audio, duration), daemon=True).start()
+        self.generation += 1
+        gen = self.generation
+        threading.Thread(target=self._transcribe, args=(audio, duration, gen), daemon=True).start()
 
-    def _transcribe(self, audio: np.ndarray, duration: float):
+    def abort(self):
+        """Interrompe la registrazione in corso (senza trascrivere) e invalida
+        qualunque trascrizione gia' avviata: se completa, il suo risultato
+        verra' scartato in silenzio invece di comparire in ritardo."""
+        if self.recording:
+            self.recording = False
+            if self.stream is not None:
+                self.stream.stop()
+                self.stream.close()
+                self.stream = None
+            with self.lock:
+                self.frames = []
+        self.generation += 1
+        emit({"event": "aborted"})
+
+    def _transcribe(self, audio: np.ndarray, duration: float, gen: int):
         try:
             self.ensure_model()
+            if gen != self.generation:
+                return
             emit({"event": "transcribing"})
             t0 = time.time()
             lang = None if self.language == "auto" else self.language
             segments, info = self.model.transcribe(audio, language=lang)
             text = " ".join(seg.text.strip() for seg in segments).strip()
             elapsed = time.time() - t0
+            if gen != self.generation:
+                return
             emit({
                 "event": "result",
                 "text": text,
@@ -254,7 +281,8 @@ class Service:
                 "language": info.language,
             })
         except Exception as exc:  # noqa: BLE001
-            emit({"event": "error", "message": str(exc)})
+            if gen == self.generation:
+                emit({"event": "error", "message": str(exc)})
 
     def handle(self, msg: dict):
         cmd = msg.get("cmd")
@@ -283,6 +311,8 @@ class Service:
             self.start_recording()
         elif cmd == "stop":
             self.stop_recording()
+        elif cmd == "abort":
+            self.abort()
         elif cmd == "shutdown":
             sys.exit(0)
         else:
