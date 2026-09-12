@@ -42,8 +42,8 @@
   #pill-listening .row {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
+    gap: 18px;
+    padding: 18px 22px;
   }
   .mic-wrap {
     position: relative;
@@ -115,8 +115,8 @@
   #pill-processing .row {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 16px 20px;
+    gap: 16px;
+    padding: 18px 22px;
   }
   .spinner {
     width: 18px;
@@ -141,17 +141,17 @@
 
   /* ---- result ---- */
   #pill-result {
-    padding: 14px 16px 14px 20px;
-    gap: 10px;
+    padding: 20px 22px;
+    gap: 14px;
   }
   .result-top {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
   }
   .dot {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: var(--accent);
     flex-shrink: 0;
@@ -159,12 +159,19 @@
   .result-preview {
     flex: 1;
     min-width: 0;
-    font-size: 14px;
+    font-size: 14.5px;
+    line-height: 1.4;
     color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
+  }
+  .result-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
   }
   .icon-btn {
     width: 28px;
@@ -236,14 +243,13 @@
   .result-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     flex-shrink: 0;
   }
   .result-hints {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding-left: 18px;
+    gap: 16px;
     font-family: "IBM Plex Mono", monospace;
     font-size: 10.5px;
     color: var(--text-tertiary);
@@ -256,8 +262,8 @@
   .result-expanded-head {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 13px 16px 13px 20px;
+    gap: 14px;
+    padding: 16px 20px 16px 22px;
   }
   .result-expanded-title {
     flex: 1;
@@ -271,7 +277,7 @@
     background: var(--border-soft);
   }
   .result-body {
-    padding: 14px 20px;
+    padding: 16px 22px;
     max-height: 128px;
     overflow-y: auto;
     font-size: 14px;
@@ -281,8 +287,8 @@
   .result-expanded-footer {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
+    gap: 12px;
+    padding: 14px 20px;
   }
   .btn {
     display: flex;
@@ -311,8 +317,8 @@
   #pill-flash .row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 14px 20px;
+    gap: 14px;
+    padding: 18px 22px;
     font-size: 13.5px;
     color: var(--text-primary);
   }
@@ -345,12 +351,14 @@
       <div class="result-top">
         <div class="dot"></div>
         <div class="result-preview" id="result-preview" title="Espandi"></div>
+      </div>
+      <div class="result-footer">
+        <div class="result-hints" id="result-hints"></div>
         <div class="result-actions">
           <button class="icon-btn" id="btn-copy" title="Copia"><span class="icon-copy-back"></span><span class="icon-copy-front"></span></button>
           <button class="icon-btn" id="btn-expand" title="Espandi"><span class="icon-chevron down"></span></button>
         </div>
       </div>
-      <div class="result-hints" id="result-hints"></div>
     </div>
 
     <div class="pill-card" id="pill-result-expanded">
