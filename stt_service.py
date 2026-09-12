@@ -298,18 +298,35 @@ class Service:
         self.generation += 1
         emit({"event": "aborted"})
 
+    def _run_transcribe(self, audio, lang):
+        segments, info = self.model.transcribe(audio, language=lang)
+        text = " ".join(seg.text.strip() for seg in segments).strip()
+        return text, info
+
     def _transcribe(self, audio: np.ndarray, duration: float, gen: int):
         try:
             self.ensure_model()
             if gen != self.generation:
                 return
-            model_used = self.loaded_model_size
-            device_used = self.loaded_device
-            emit({"event": "transcribing", "model": model_used, "device": device_used})
+            emit({"event": "transcribing", "model": self.loaded_model_size, "device": self.loaded_device})
             t0 = time.time()
             lang = None if self.language == "auto" else self.language
-            segments, info = self.model.transcribe(audio, language=lang)
-            text = " ".join(seg.text.strip() for seg in segments).strip()
+            try:
+                text, info = self._run_transcribe(audio, lang)
+            except Exception as exc:  # noqa: BLE001
+                if self.loaded_device != "cuda":
+                    raise
+                # Il modello si e' "caricato" ma il kernel CUDA fallisce solo
+                # al primo uso reale (es. cuBLAS scoperto mancante solo ora,
+                # non al caricamento): non mostriamo l'errore, ricadiamo
+                # sulla CPU e ritentiamo una volta.
+                emit({"event": "gpu_fallback", "message": str(exc)})
+                self.model = WhisperModel(model_dir(self.model_size), device="cpu", compute_type="int8")
+                self.loaded_device = "cpu"
+                emit({"event": "model_ready", "model": self.loaded_model_size, "device": "cpu"})
+                text, info = self._run_transcribe(audio, lang)
+            model_used = self.loaded_model_size
+            device_used = self.loaded_device
             elapsed = time.time() - t0
             if gen != self.generation:
                 return
