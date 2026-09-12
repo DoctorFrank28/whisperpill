@@ -24,6 +24,9 @@ async function init() {
   renderSegPills("ui-language-select", config.uiLanguage);
   byId("models-desc").innerHTML = t("settings.models.desc", { path: '<span class="mono">whisper-ai/models</span>' });
 
+  const version = await window.whisperPill.getVersion();
+  byId("app-footer").innerHTML = `WhisperPill v${version}<br />faster-whisper`;
+
   window.whisperPill.listDevices();
   window.whisperPill.listModels();
 }

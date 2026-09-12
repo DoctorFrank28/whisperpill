@@ -543,6 +543,8 @@ ipcMain.handle("config:set", (_e, patch) => {
 
 ipcMain.handle("i18n:get", () => getI18nPayload());
 
+ipcMain.handle("app:getVersion", () => app.getVersion());
+
 ipcMain.handle("devices:list", () => {
   sttBridge.listDevices();
   return true;

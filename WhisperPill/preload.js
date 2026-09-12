@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld("whisperPill", {
   pillHoverEnter: () => ipcRenderer.send("pill:hoverEnter"),
   pillHoverLeave: () => ipcRenderer.send("pill:hoverLeave"),
 
+  getVersion: () => ipcRenderer.invoke("app:getVersion"),
+
   getConfig: () => ipcRenderer.invoke("config:get"),
   setConfig: (patch) => ipcRenderer.invoke("config:set", patch),
   listDevices: () => ipcRenderer.invoke("devices:list"),
