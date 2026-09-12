@@ -3,7 +3,7 @@ const path = require("path");
 const { exec } = require("child_process");
 
 const { store } = require("./config");
-const { SttBridge } = require("./sttBridge");
+const { SttBridge, MODEL_SIZES, anyModelDownloaded } = require("./sttBridge");
 const { HotkeyEngine } = require("./hotkeys");
 const { whisperEnvironmentExists, setupScriptExists, runSetup, SETUP_SCRIPT } = require("./setupRunner");
 
@@ -188,10 +188,41 @@ sttBridge.on("message", (msg) => {
         settingsWindow.webContents.send("devices", msg.list);
       }
       break;
+    case "models":
+      broadcastToManagers("models", msg.list);
+      break;
+    case "model_download_start":
+      broadcastToManagers("models:progress", { model: msg.model, percent: 0 });
+      if (currentState.kind === "processing") {
+        sendPillState({ kind: "processing", downloading: msg.model, percent: 0 });
+      }
+      break;
+    case "model_download_progress":
+      broadcastToManagers("models:progress", { model: msg.model, percent: msg.percent });
+      if (currentState.kind === "processing") {
+        sendPillState({ kind: "processing", downloading: msg.model, percent: msg.percent });
+      }
+      break;
+    case "model_download_done":
+      broadcastToManagers("models:done", { model: msg.model, success: msg.success, message: msg.message });
+      if (currentState.kind === "processing" && !msg.success) {
+        sendPillState({ kind: "error", message: msg.message || "Impossibile scaricare il modello." });
+        scheduleAutoHide(3000);
+      }
+      break;
+    case "model_deleted":
+      broadcastToManagers("models:deleted", { model: msg.model });
+      break;
     default:
       break;
   }
 });
+
+function broadcastToManagers(channel, payload) {
+  [settingsWindow, setupWindow].forEach((win) => {
+    if (win && !win.isDestroyed()) win.webContents.send(channel, payload);
+  });
+}
 
 sttBridge.on("error", (message) => {
   sendPillState({ kind: "error", message });
@@ -251,9 +282,13 @@ function openSetupWindow() {
       nodeIntegration: false,
     },
   });
+  setupWindow._wbReady = false;
   setupWindow.setMenuBarVisibility(false);
   setupWindow.loadFile(path.join(__dirname, "renderer", "setup.html"));
   setupWindow.once("ready-to-show", () => setupWindow.show());
+  setupWindow.webContents.once("did-finish-load", () => {
+    if (setupWindow) setupWindow._wbReady = true;
+  });
   if (process.env.WHISPERBAR_DEBUG_CONSOLE) {
     setupWindow.webContents.on("console-message", (_e, level, message) => console.log("[setup]", level, message));
   }
@@ -263,15 +298,27 @@ function openSetupWindow() {
   return setupWindow;
 }
 
+function sendToSetupWindow(channel, payload) {
+  if (!setupWindow || setupWindow.isDestroyed()) return;
+  if (setupWindow._wbReady) {
+    setupWindow.webContents.send(channel, payload);
+  } else {
+    setupWindow.webContents.once("did-finish-load", () => {
+      if (setupWindow && !setupWindow.isDestroyed()) setupWindow.webContents.send(channel, payload);
+    });
+  }
+}
+
+// Ritorna true se l'ambiente Python e' pronto all'uso (gia' presente o appena installato).
 async function ensureWhisperEnvironment() {
-  if (whisperEnvironmentExists()) return;
+  if (whisperEnvironmentExists()) return true;
 
   if (!setupScriptExists()) {
     dialog.showErrorBox(
       "Ambiente whisper non trovato",
       `Non trovo ne' l'ambiente Python ne' lo script di setup in:\n${SETUP_SCRIPT}\n\nReinstalla whisper-ai manualmente prima di usare WhisperBar.`
     );
-    return;
+    return false;
   }
 
   const choice = dialog.showMessageBoxSync({
@@ -283,7 +330,7 @@ async function ensureWhisperEnvironment() {
     defaultId: 0,
     cancelId: 1,
   });
-  if (choice !== 0) return;
+  if (choice !== 0) return false;
 
   const win = openSetupWindow();
   const emitter = runSetup();
@@ -291,12 +338,25 @@ async function ensureWhisperEnvironment() {
     if (win && !win.isDestroyed()) win.webContents.send("setup:log", line);
   });
 
-  await new Promise((resolve) => {
-    emitter.on("done", (result) => {
-      if (win && !win.isDestroyed()) win.webContents.send("setup:done", result);
-      resolve(result);
+  const result = await new Promise((resolve) => {
+    emitter.on("done", (r) => {
+      if (win && !win.isDestroyed()) win.webContents.send("setup:done", r);
+      resolve(r);
     });
   });
+  return result.success;
+}
+
+// Al primo avvio con l'ambiente pronto ma nessun modello scaricato, chiede quali
+// scaricare. Non blocca l'avvio dell'app: la finestra e' indipendente.
+function maybePromptForModels() {
+  if (store.get("modelsPromptShown")) return;
+  if (!whisperEnvironmentExists()) return;
+  store.set("modelsPromptShown", true);
+  if (anyModelDownloaded()) return;
+
+  if (!setupWindow || setupWindow.isDestroyed()) openSetupWindow();
+  sendToSetupWindow("setup:phase", "models");
 }
 
 ipcMain.on("setup:close", (event) => {
@@ -381,6 +441,13 @@ ipcMain.handle("devices:list", () => {
   return true;
 });
 
+ipcMain.handle("models:list", () => {
+  sttBridge.listModels();
+  return true;
+});
+ipcMain.on("models:download", (_e, size) => sttBridge.downloadModel(size));
+ipcMain.on("models:delete", (_e, size) => sttBridge.deleteModel(size));
+
 ipcMain.on("shortcut:beginCapture", (event) => {
   hotkeys.captureNextCombo((accelerator) => {
     store.set("shortcut", accelerator);
@@ -407,10 +474,12 @@ app.whenReady().then(async () => {
   createTray();
   if (process.env.WHISPERBAR_DEBUG_OPEN_SETTINGS) openSettingsWindow();
 
-  await ensureWhisperEnvironment();
+  const envReady = await ensureWhisperEnvironment();
 
   sttBridge.start();
   applySttConfig();
+
+  if (envReady) maybePromptForModels();
 
   hotkeys = new HotkeyEngine({
     getConfig,

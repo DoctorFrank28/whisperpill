@@ -13,6 +13,14 @@ const INSTALLED_WHISPER_DIR = "C:\\Users\\Frank\\Documents\\claude\\whisper-ai";
 const WHISPER_DIR = app.isPackaged ? INSTALLED_WHISPER_DIR : DEV_WHISPER_DIR;
 const PYTHON_EXE = path.join(WHISPER_DIR, ".venv", "Scripts", "python.exe");
 const SERVICE_SCRIPT = path.join(WHISPER_DIR, "stt_service.py");
+const MODELS_DIR = path.join(WHISPER_DIR, "models");
+
+// Tenute in sync con MODEL_REPOS in stt_service.py.
+const MODEL_SIZES = ["tiny", "base", "small", "medium", "large-v3"];
+
+function anyModelDownloaded() {
+  return MODEL_SIZES.some((size) => fs.existsSync(path.join(MODELS_DIR, size, "model.bin")));
+}
 
 class SttBridge extends EventEmitter {
   constructor() {
@@ -76,6 +84,18 @@ class SttBridge extends EventEmitter {
     this._send({ cmd: "list_devices" });
   }
 
+  listModels() {
+    this._send({ cmd: "list_models" });
+  }
+
+  downloadModel(size) {
+    this._send({ cmd: "download_model", model: size });
+  }
+
+  deleteModel(size) {
+    this._send({ cmd: "delete_model", model: size });
+  }
+
   startRecording() {
     this._send({ cmd: "start" });
   }
@@ -94,4 +114,4 @@ class SttBridge extends EventEmitter {
   }
 }
 
-module.exports = { SttBridge, WHISPER_DIR, PYTHON_EXE, SERVICE_SCRIPT };
+module.exports = { SttBridge, WHISPER_DIR, PYTHON_EXE, SERVICE_SCRIPT, MODEL_SIZES, anyModelDownloaded };

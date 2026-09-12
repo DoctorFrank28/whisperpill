@@ -287,6 +287,35 @@
     height: 1px;
     background: var(--border-soft);
   }
+
+  /* ---- gestione modelli ---- */
+  .model-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 13px;
+    border-radius: 10px;
+    background: var(--bg-surface-2);
+    box-shadow: 0 0 0 1px var(--border-softer);
+  }
+  .model-info { flex: 1; min-width: 0; }
+  .model-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .model-desc-small { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+  .model-size { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--text-tertiary); flex-shrink: 0; width: 62px; }
+  .model-progress {
+    width: 70px; height: 4px; border-radius: 2px; background: var(--border-softer);
+    overflow: hidden; flex-shrink: 0;
+  }
+  .model-progress > div { height: 100%; background: var(--accent); width: 0%; }
+  .model-action-btn {
+    padding: 0 12px; height: 28px; border-radius: 8px; font-size: 12px;
+    border: none; cursor: pointer; flex-shrink: 0; min-width: 78px;
+  }
+  .model-action-btn.download { background: var(--accent); color: var(--accent-contrast); font-weight: 600; }
+  .model-action-btn.delete { background: var(--control-bg); color: var(--text-primary); }
+  .model-action-btn.delete:hover { background: var(--control-bg-hover); }
+  .model-action-btn[disabled] { opacity: 0.5; cursor: default; }
+  .model-percent { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; color: var(--text-secondary); flex-shrink: 0; width: 32px; text-align: right; }
 </style>
 </head>
 <body>
@@ -307,6 +336,7 @@
         <div class="nav-item active" data-section="shortcuts">Scorciatoie</div>
         <div class="nav-item" data-section="output">Output testo</div>
         <div class="nav-item" data-section="model">Lingua e modello</div>
+        <div class="nav-item" data-section="models">Modelli</div>
         <div class="nav-item" data-section="mic">Microfono</div>
         <div class="nav-item" data-section="startup">Avvio</div>
         <div class="nav-item" data-section="appearance">Aspetto</div>
@@ -395,6 +425,12 @@
               <div>PIU' PRECISO, PIU' LENTO &rarr;</div>
             </div>
           </div>
+        </div>
+
+        <div class="section" id="section-models">
+          <h2>Modelli</h2>
+          <div class="field-desc" style="margin-top:-8px;">Scarica o rimuovi i modelli Whisper. Vengono salvati in <span class="mono">whisper-ai/models</span>.</div>
+          <div id="models-manage-list" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;"></div>
         </div>
 
         <div class="section" id="section-mic">

@@ -13,6 +13,7 @@ const defaults = {
   micDevice: null, // null = default device, otherwise sounddevice index
   launchAtStartup: false,
   theme: "auto", // "auto" | "light" | "dark"
+  modelsPromptShown: false,
 };
 
 const store = new Store({ defaults });

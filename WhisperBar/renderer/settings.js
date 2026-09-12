@@ -1,4 +1,12 @@
 let config = null;
+const MODEL_INFO = {
+  tiny: { desc: "Piu' veloce, meno preciso" },
+  base: { desc: "Veloce" },
+  small: { desc: "Bilanciato (consigliato)" },
+  medium: { desc: "Preciso, piu' lento" },
+  "large-v3": { desc: "Massima precisione, lento" },
+};
+let modelsState = [];
 
 function byId(id) {
   return document.getElementById(id);
@@ -17,6 +25,7 @@ async function init() {
   renderSegPills("theme-select", config.theme);
 
   window.whisperBar.listDevices();
+  window.whisperBar.listModels();
 }
 
 function renderShortcutChips(accelerator) {
@@ -151,5 +160,90 @@ window.whisperBar.onDevices((devices) => {
 
 byId("win-min").addEventListener("click", () => window.whisperBar.minimizeWindow());
 byId("win-close").addEventListener("click", () => window.whisperBar.closeWindow());
+
+// ---- gestione modelli ----
+
+function renderModelsManageList() {
+  const container = byId("models-manage-list");
+  container.innerHTML = "";
+  modelsState.forEach((m) => {
+    const info = MODEL_INFO[m.size] || { desc: "" };
+    const row = document.createElement("div");
+    row.className = "model-row";
+
+    const infoEl = document.createElement("div");
+    infoEl.className = "model-info";
+    infoEl.innerHTML = `<div class="model-name">${m.size}</div><div class="model-desc-small">${info.desc}</div>`;
+
+    const sizeEl = document.createElement("div");
+    sizeEl.className = "model-size";
+    sizeEl.textContent = m.approxMB >= 1000 ? `~${(m.approxMB / 1000).toFixed(1)} GB` : `~${m.approxMB} MB`;
+
+    row.append(infoEl, sizeEl);
+
+    if (m._progress != null) {
+      const percentEl = document.createElement("div");
+      percentEl.className = "model-percent";
+      percentEl.textContent = `${m._progress}%`;
+      const bar = document.createElement("div");
+      bar.className = "model-progress";
+      const fill = document.createElement("div");
+      fill.style.width = `${m._progress}%`;
+      bar.appendChild(fill);
+      row.append(bar, percentEl);
+    } else if (m.downloaded) {
+      const btn = document.createElement("button");
+      btn.className = "model-action-btn delete";
+      btn.textContent = "Elimina";
+      btn.addEventListener("click", () => window.whisperBar.deleteModel(m.size));
+      row.appendChild(btn);
+    } else {
+      const btn = document.createElement("button");
+      btn.className = "model-action-btn download";
+      btn.textContent = m._failed ? "Riprova" : "Scarica";
+      btn.addEventListener("click", () => {
+        m._failed = false;
+        window.whisperBar.downloadModel(m.size);
+      });
+      row.appendChild(btn);
+    }
+
+    container.appendChild(row);
+  });
+}
+
+window.whisperBar.onModels((list) => {
+  modelsState = list.map((m) => {
+    const prev = modelsState.find((p) => p.size === m.size);
+    return { ...m, _progress: prev?._progress ?? null, _failed: prev?._failed ?? false };
+  });
+  renderModelsManageList();
+});
+
+window.whisperBar.onModelProgress(({ model, percent }) => {
+  const m = modelsState.find((x) => x.size === model);
+  if (m) {
+    m._progress = percent;
+    renderModelsManageList();
+  }
+});
+
+window.whisperBar.onModelDone(({ model, success }) => {
+  const m = modelsState.find((x) => x.size === model);
+  if (m) {
+    m._progress = null;
+    m._failed = !success;
+    if (success) m.downloaded = true;
+    renderModelsManageList();
+  }
+});
+
+window.whisperBar.onModelDeleted(({ model }) => {
+  const m = modelsState.find((x) => x.size === model);
+  if (m) {
+    m.downloaded = false;
+    renderModelsManageList();
+  }
+});
 
 init();

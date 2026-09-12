@@ -30,5 +30,24 @@ contextBridge.exposeInMainWorld("whisperBar", {
   onSetupDone: (callback) => {
     ipcRenderer.on("setup:done", (_event, result) => callback(result));
   },
+  onSetupPhase: (callback) => {
+    ipcRenderer.on("setup:phase", (_event, phase) => callback(phase));
+  },
   closeSetupWindow: () => ipcRenderer.send("setup:close"),
+
+  listModels: () => ipcRenderer.invoke("models:list"),
+  downloadModel: (size) => ipcRenderer.send("models:download", size),
+  deleteModel: (size) => ipcRenderer.send("models:delete", size),
+  onModels: (callback) => {
+    ipcRenderer.on("models", (_event, list) => callback(list));
+  },
+  onModelProgress: (callback) => {
+    ipcRenderer.on("models:progress", (_event, payload) => callback(payload));
+  },
+  onModelDone: (callback) => {
+    ipcRenderer.on("models:done", (_event, payload) => callback(payload));
+  },
+  onModelDeleted: (callback) => {
+    ipcRenderer.on("models:deleted", (_event, payload) => callback(payload));
+  },
 });
