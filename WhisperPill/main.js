@@ -6,6 +6,7 @@ const { store } = require("./config");
 const { SttBridge, MODEL_SIZES, anyModelDownloaded } = require("./sttBridge");
 const { HotkeyEngine } = require("./hotkeys");
 const { whisperEnvironmentExists, setupScriptExists, runSetup, SETUP_SCRIPT } = require("./setupRunner");
+const { DICTS, translate } = require("./i18n");
 
 const PILL_WIDTH = 560;
 const PILL_HEIGHT = 340;
@@ -24,6 +25,30 @@ let recordingStartedAt = null;
 
 function getConfig() {
   return store.store;
+}
+
+// Lingua dell'INTERFACCIA (menu, impostazioni) - indipendente dalla lingua di
+// trascrizione (cfg.language), che riguarda solo faster-whisper.
+function resolveUILanguage() {
+  const cfg = getConfig();
+  if (cfg.uiLanguage && cfg.uiLanguage !== "auto") return cfg.uiLanguage;
+  return app.getLocale().toLowerCase().startsWith("it") ? "it" : "en";
+}
+
+function t(key, vars) {
+  return translate(resolveUILanguage(), key, vars);
+}
+
+function getI18nPayload() {
+  return { lang: resolveUILanguage(), dicts: DICTS };
+}
+
+function broadcastI18n() {
+  const payload = getI18nPayload();
+  [pillWindow, settingsWindow, setupWindow].forEach((win) => {
+    if (win && !win.isDestroyed()) win.webContents.send("i18n:changed", payload);
+  });
+  if (tray) updateTrayMenu();
 }
 
 function applySttConfig() {
@@ -205,9 +230,9 @@ function abortCurrent() {
 
 function activationHintText() {
   const cfg = getConfig();
-  if (cfg.activationMode === "hold") return `${cfg.shortcut} tenuto premuto`;
-  if (cfg.activationMode === "toggle") return `${cfg.shortcut} per fermare`;
-  return "Click sull'icona in tray per fermare";
+  if (cfg.activationMode === "hold") return t("pill.activationHold", { shortcut: cfg.shortcut });
+  if (cfg.activationMode === "toggle") return t("pill.activationToggle", { shortcut: cfg.shortcut });
+  return t("pill.activationTrayOnly");
 }
 
 sttBridge.on("message", (msg) => {
@@ -221,7 +246,7 @@ sttBridge.on("message", (msg) => {
     case "result": {
       const text = (msg.text || "").trim();
       if (!text) {
-        sendPillState({ kind: "error", message: "Nessun testo riconosciuto." });
+        sendPillState({ kind: "error", message: t("pill.noSpeechDetected") });
         scheduleAutoHide(3000);
         break;
       }
@@ -283,7 +308,7 @@ sttBridge.on("message", (msg) => {
     case "model_download_done":
       broadcastToManagers("models:done", { model: msg.model, success: msg.success, message: msg.message });
       if (currentState.kind === "processing" && !msg.success) {
-        sendPillState({ kind: "error", message: msg.message || "Impossibile scaricare il modello." });
+        sendPillState({ kind: "error", message: msg.message || t("pill.modelDownloadFailed") });
         scheduleAutoHide(3000);
       }
       break;
@@ -336,9 +361,9 @@ function createTray() {
 
 function updateTrayMenu() {
   const menu = Menu.buildFromTemplate([
-    { label: "Impostazioni", click: () => openSettingsWindow() },
+    { label: t("settings.title"), click: () => openSettingsWindow() },
     { type: "separator" },
-    { label: "Esci", click: () => app.quit() },
+    { label: t("tray.quit"), click: () => app.quit() },
   ]);
   tray.setContextMenu(menu);
 }
@@ -392,18 +417,18 @@ async function ensureWhisperEnvironment() {
 
   if (!setupScriptExists()) {
     dialog.showErrorBox(
-      "Ambiente whisper non trovato",
-      `Non trovo ne' l'ambiente Python ne' lo script di setup in:\n${SETUP_SCRIPT}\n\nReinstalla whisper-ai manualmente prima di usare WhisperPill.`
+      t("dialog.envNotFoundTitle"),
+      t("dialog.envNotFoundBody", { path: SETUP_SCRIPT })
     );
     return false;
   }
 
   const choice = dialog.showMessageBoxSync({
     type: "question",
-    title: "WhisperPill",
-    message: "L'ambiente di trascrizione non e' ancora installato.",
-    detail: "Vuoi installarlo ora? Verranno scaricati alcuni pacchetti Python (serve una connessione internet).",
-    buttons: ["Installa ora", "Piu' tardi"],
+    title: t("dialog.installPromptTitle"),
+    message: t("dialog.installPromptMessage"),
+    detail: t("dialog.installPromptDetail"),
+    buttons: [t("dialog.installNow"), t("dialog.installLater")],
     defaultId: 0,
     cancelId: 1,
   });
@@ -511,9 +536,12 @@ ipcMain.handle("config:set", (_e, patch) => {
   if ("launchAtStartup" in patch) applyLoginItem();
   if (patch.language || patch.modelSize || "micDevice" in patch) applySttConfig();
   if (patch.activationMode) updateHotkeyReservation();
+  if (patch.uiLanguage) broadcastI18n();
 
   return getConfig();
 });
+
+ipcMain.handle("i18n:get", () => getI18nPayload());
 
 ipcMain.handle("devices:list", () => {
   sttBridge.listDevices();

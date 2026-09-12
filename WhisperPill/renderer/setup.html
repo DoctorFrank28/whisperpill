@@ -121,36 +121,37 @@
   <div id="app">
     <div id="titlebar">
       <div class="dot"></div>
-      <div class="name" id="titlebar-name">WhisperPill — Configurazione ambiente</div>
+      <div class="name" id="titlebar-name" data-i18n="setup.envTitle">WhisperPill — Configurazione ambiente</div>
     </div>
 
     <div class="phase active" id="phase-install">
       <div id="status-row">
         <div class="spinner" id="status-spinner"></div>
-        <div id="status-text">Installazione in corso…</div>
+        <div id="status-text" data-i18n="setup.installing">Installazione in corso…</div>
       </div>
-      <div id="status-sub">Scarico e configuro faster-whisper. Puo' richiedere qualche minuto.</div>
+      <div id="status-sub" data-i18n="setup.installingDesc">Scarico e configuro faster-whisper. Puo' richiedere qualche minuto.</div>
 
       <div id="log"></div>
 
       <div id="footer">
-        <button class="btn btn-ghost" id="btn-close" disabled>Chiudi</button>
+        <button class="btn btn-ghost" id="btn-close" disabled data-i18n="setup.close">Chiudi</button>
       </div>
     </div>
 
     <div class="phase" id="phase-models">
       <div id="models-header">
-        <div id="models-title">Quali modelli vuoi scaricare?</div>
-        <div id="models-sub">Puoi cambiarli in qualsiasi momento dalle Impostazioni &rsaquo; Modelli. "small" e' un buon compromesso per iniziare.</div>
+        <div id="models-title" data-i18n="setup.modelsTitle">Quali modelli vuoi scaricare?</div>
+        <div id="models-sub" data-i18n="setup.modelsSub">Puoi cambiarli in qualsiasi momento dalle Impostazioni &rsaquo; Modelli. "small" e' un buon compromesso per iniziare.</div>
       </div>
       <div id="models-list"></div>
       <div id="models-footer">
-        <button class="btn btn-ghost" id="btn-skip">Salta per ora</button>
-        <button class="btn btn-primary" id="btn-download">Scarica selezionati</button>
+        <button class="btn btn-ghost" id="btn-skip" data-i18n="setup.skip">Salta per ora</button>
+        <button class="btn btn-primary" id="btn-download" data-i18n="setup.download">Scarica selezionati</button>
       </div>
     </div>
   </div>
 
+  <script src="i18n-client.js"></script>
   <script src="setup.js"></script>
 </body>
 </html>

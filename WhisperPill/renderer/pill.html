@@ -337,7 +337,7 @@
         </div>
         <div class="wave" id="wave"></div>
         <div class="timer" id="timer">0:00</div>
-        <button class="icon-btn btn-abort" title="Annulla"><span class="icon-x"></span></button>
+        <button class="icon-btn btn-abort" data-i18n-title="pill.cancel"><span class="icon-x"></span></button>
       </div>
       <div class="hint" id="listening-hint"></div>
     </div>
@@ -345,23 +345,23 @@
     <div class="pill-card" id="pill-processing">
       <div class="row">
         <div class="spinner"></div>
-        <div class="processing-label">Trascrizione in corso…</div>
+        <div class="processing-label" data-i18n="pill.transcribing"></div>
         <div class="processing-meta" id="processing-meta"></div>
-        <button class="icon-btn btn-abort" title="Annulla"><span class="icon-x"></span></button>
+        <button class="icon-btn btn-abort" data-i18n-title="pill.cancel"><span class="icon-x"></span></button>
       </div>
     </div>
 
     <div class="pill-card" id="pill-result-collapsed">
       <div class="result-top">
         <div class="dot"></div>
-        <div class="result-preview" id="result-preview" title="Espandi"></div>
+        <div class="result-preview" id="result-preview" data-i18n-title="pill.expand"></div>
       </div>
       <div class="result-footer">
         <div class="result-hints" id="result-hints"></div>
         <div class="result-actions">
-          <button class="icon-btn" id="btn-copy" title="Copia"><span class="icon-copy-back"></span><span class="icon-copy-front"></span></button>
-          <button class="icon-btn" id="btn-expand" title="Espandi"><span class="icon-chevron down"></span></button>
-          <button class="icon-btn btn-dismiss" title="Chiudi"><span class="icon-x"></span></button>
+          <button class="icon-btn" id="btn-copy" data-i18n-title="pill.copy"><span class="icon-copy-back"></span><span class="icon-copy-front"></span></button>
+          <button class="icon-btn" id="btn-expand" data-i18n-title="pill.expand"><span class="icon-chevron down"></span></button>
+          <button class="icon-btn btn-dismiss" data-i18n-title="pill.close"><span class="icon-x"></span></button>
         </div>
       </div>
     </div>
@@ -369,34 +369,35 @@
     <div class="pill-card" id="pill-result-expanded">
       <div class="result-expanded-head">
         <div class="dot"></div>
-        <div class="result-expanded-title" id="expanded-title">TRASCRIZIONE</div>
-        <button class="icon-btn" id="btn-collapse" title="Comprimi"><span class="icon-chevron up"></span></button>
+        <div class="result-expanded-title" id="expanded-title" data-i18n="pill.transcriptionLabel"></div>
+        <button class="icon-btn" id="btn-collapse" data-i18n-title="pill.collapse"><span class="icon-chevron up"></span></button>
       </div>
       <div class="divider"></div>
       <div class="result-body" id="expanded-text"></div>
       <div class="divider"></div>
       <div class="result-expanded-footer">
         <div class="result-hints" id="expanded-hint" style="flex:1;padding-left:0;"></div>
-        <button class="btn btn-primary" id="btn-copy-2">Copia</button>
-        <button class="btn btn-ghost" id="btn-close">Chiudi</button>
+        <button class="btn btn-primary" id="btn-copy-2" data-i18n="pill.copy"></button>
+        <button class="btn btn-ghost" id="btn-close" data-i18n="pill.close"></button>
       </div>
     </div>
 
     <div class="pill-card" id="pill-error">
       <div class="row">
         <div id="error-text" style="flex: 1;"></div>
-        <button class="icon-btn btn-dismiss" title="Chiudi"><span class="icon-x"></span></button>
+        <button class="icon-btn btn-dismiss" data-i18n-title="pill.close"><span class="icon-x"></span></button>
       </div>
     </div>
 
     <div class="pill-card" id="pill-flash">
       <div class="row">
         <div id="flash-text" style="flex: 1;"></div>
-        <button class="icon-btn btn-dismiss" title="Chiudi"><span class="icon-x"></span></button>
+        <button class="icon-btn btn-dismiss" data-i18n-title="pill.close"><span class="icon-x"></span></button>
       </div>
     </div>
   </div>
 
+  <script src="i18n-client.js"></script>
   <script src="pill.js"></script>
 </body>
 </html>

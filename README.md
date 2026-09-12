@@ -5,105 +5,107 @@
 ![Electron](https://img.shields.io/badge/Electron-31-47848F)
 ![faster--whisper](https://img.shields.io/badge/faster--whisper-local%20%26%20offline-63C7D6)
 
-**WhisperPill** è un'app di dettatura vocale per Windows (**voice typing / speech-to-text**) sotto forma di una piccola pillola flottante: tieni premuta una scorciatoia, parla, rilascia — il testo trascritto finisce negli appunti e/o digitato automaticamente in qualsiasi programma. La trascrizione avviene **interamente in locale** tramite [faster-whisper](https://github.com/SYSTRAN/faster-whisper): nessun audio lascia il tuo PC.
+**WhisperPill** is a voice dictation app for Windows (**voice typing / speech-to-text**) in the form of a small floating pill: hold a shortcut, speak, release — the transcribed text is copied to the clipboard and/or typed automatically into whatever app you're using. Transcription runs **entirely locally** via [faster-whisper](https://github.com/SYSTRAN/faster-whisper): no audio ever leaves your PC.
 
 > A floating push-to-talk dictation bar for Windows, powered by a fully local/offline `faster-whisper` speech-to-text backend — no cloud, no API keys, no audio ever leaves your machine.
 
-## Indice
+## Table of contents
 
-- [Funzionalità](#funzionalità)
-- [Perché WhisperPill](#perché-whisperpill)
-- [Requisiti](#requisiti)
-- [Installazione](#installazione)
-- [Quale modello scegliere](#quale-modello-scegliere)
-- [Utilizzo](#utilizzo)
-- [Sviluppo](#sviluppo)
-- [Domande frequenti](#domande-frequenti)
-- [Note tecniche](#note-tecniche)
-- [Licenza](#licenza)
+- [Features](#features)
+- [Why WhisperPill](#why-whisperpill)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Which model should I use](#which-model-should-i-use)
+- [Usage](#usage)
+- [Development](#development)
+- [FAQ](#faq)
+- [Technical notes](#technical-notes)
+- [License](#license)
 
-## Funzionalità
+## Features
 
-- **Pillola flottante** sempre in primo piano, con stati per ascolto, elaborazione, risultato (compatto/espanso) ed errore
-- **Tre modalità di attivazione**: tieni premuto (push-to-talk), tocca per avviare/fermare, o solo dalla system tray
-- **Output configurabile**: copia negli appunti, digitazione automatica nella finestra attiva (auto-type), o solo visualizzazione nella pillola
-- **Gestione modelli integrata**: scarica/elimina i modelli Whisper (tiny → large-v3) dalle Impostazioni, con avanzamento in tempo reale; nessuna cache nascosta, tutto in una cartella `models/` dedicata
-- **Setup automatico al primo avvio**: se l'ambiente Python non è pronto, propone di installarlo mostrando il log in diretta
-- **Annulla in qualsiasi momento**: `Esc` o la X sulla pillola interrompono ascolto o elaborazione in corso
-- Tema chiaro/scuro automatico, scorciatoia riassegnabile, selezione lingua e microfono
-- 100% locale e privato: **zero cloud, zero API key, zero telemetria**
+- **Floating pill** always on top, with distinct states for listening, processing, result (compact/expanded), and error
+- **Three activation modes**: hold-to-talk (push-to-talk), tap to start/stop, or tray-icon only
+- **Configurable output**: copy to clipboard, auto-type into the active window, or just display in the pill
+- **Built-in model manager**: download/delete Whisper models (tiny → large-v3) from Settings, with live progress; no hidden cache, everything lives in a dedicated `models/` folder
+- **Automatic first-run setup**: if the Python environment isn't ready yet, it offers to install it and streams the log live
+- **Cancel anytime**: `Esc` or the X on the pill interrupts listening or processing in progress
+- Automatic light/dark theme, reassignable shortcut, language and microphone selection
+- Interface available in **Italian and English** (auto-detected from your system, or set manually)
+- 100% local and private: **zero cloud, zero API keys, zero telemetry**
 
-## Perché WhisperPill
+## Why WhisperPill
 
-La maggior parte degli strumenti di dettatura vocale per Windows (incluso il riconoscimento vocale nativo) invia l'audio a un servizio cloud, richiede un abbonamento, o entrambe le cose. WhisperPill nasce come alternativa **locale, gratuita e open source**: usa lo stesso modello Whisper di OpenAI (via `faster-whisper`, un runtime ottimizzato per CPU) eseguito interamente sul tuo PC.
+Most Windows dictation tools (including built-in speech recognition) send your audio to a cloud service, require a subscription, or both. WhisperPill is a **local, free, and open-source** alternative: it runs the same Whisper model from OpenAI (via `faster-whisper`, a CPU-optimized runtime) entirely on your own machine.
 
-## Requisiti
+## Requirements
 
 - Windows 10/11
-- Per l'uso quotidiano: nessuno, l'installer configura tutto
-- Per build/sviluppo: [Node.js](https://nodejs.org/) 18+ e [Python](https://www.python.org/) 3.10+
+- For everyday use: nothing else, the installer sets everything up
+- For building/development: [Node.js](https://nodejs.org/) 18+ and [Python](https://www.python.org/) 3.10+
 
-## Installazione
+## Installation
 
-Scarica ed esegui `WhisperPill Setup <versione>.exe` da [`WhisperPill/dist`](WhisperPill/dist) (generato con `npm run dist`, vedi [Sviluppo](#sviluppo)), oppure usa la versione portable `WhisperPill-<versione>-portable.exe` senza installare nulla.
+Download the latest release from the [Releases page](https://github.com/DoctorFrank28/whisperpill/releases): either `WhisperPill-Setup-<version>.exe` (installer) or `WhisperPill-<version>-portable.exe` (no installation required).
 
-> L'eseguibile non è firmato digitalmente: Windows SmartScreen potrebbe avvisare al primo avvio. Scegli **Ulteriori informazioni → Esegui comunque**.
+> The executable isn't code-signed: Windows SmartScreen may warn on first launch. Choose **More info → Run anyway**.
 
-Al primo avvio, se l'ambiente di trascrizione non è ancora installato, WhisperPill propone di configurarlo automaticamente (crea un virtualenv Python e installa `faster-whisper`), poi chiede quali modelli scaricare.
+On first launch, if the transcription environment isn't installed yet, WhisperPill offers to set it up automatically (creates a Python virtualenv and installs `faster-whisper`), then asks which models you'd like to download.
 
-## Quale modello scegliere
+## Which model should I use
 
-Whisper offre diverse taglie di modello: più sono grandi, più sono precisi ma più lenti. Su CPU (senza GPU dedicata) le trascrizioni girano in `int8`, un buon compromesso velocità/qualità già di default. Come regola generale:
+Whisper comes in several model sizes: bigger means more accurate but slower. On CPU (without a dedicated GPU), transcription runs in `int8` by default, already a good speed/quality tradeoff. As a general rule:
 
-| Modello | Dimensione | RAM consigliata | CPU consigliata | Quando usarlo |
+| Model | Size | Recommended RAM | Recommended CPU | When to use it |
 |---|---|---|---|---|
-| `tiny` | ~75 MB | 4 GB+ | Qualsiasi, anche PC datati | Note veloci e appunti dove la velocità conta più della precisione |
-| `base` | ~145 MB | 4 GB+ | Dual-core o superiore | Come `tiny`, leggermente più accurato |
-| `small` | ~480 MB | 8 GB+ | Quad-core recente (Intel i5/Ryzen 5 o superiori) | **Consigliato per la maggior parte degli utenti**: buon equilibrio tra velocità e precisione |
-| `medium` | ~1,5 GB | 8–16 GB | 6+ core | Dettatura professionale, testi lunghi o con terminologia specifica |
-| `large-v3` | ~3 GB | 16 GB+ | 8+ core, o GPU NVIDIA | Massima precisione; su sola CPU può richiedere diversi secondi a frase |
+| `tiny` | ~75 MB | 4 GB+ | Any, even older PCs | Quick notes and drafts where speed matters more than accuracy |
+| `base` | ~145 MB | 4 GB+ | Dual-core or better | Like `tiny`, slightly more accurate |
+| `small` | ~480 MB | 8 GB+ | Recent quad-core (Intel i5/Ryzen 5 or better) | **Recommended for most users**: good balance of speed and accuracy |
+| `medium` | ~1.5 GB | 8–16 GB | 6+ cores | Professional dictation, long texts, or specific terminology |
+| `large-v3` | ~3 GB | 16 GB+ | 8+ cores, or an NVIDIA GPU | Maximum accuracy; on CPU alone it can take several seconds per sentence |
 
-Se hai una **GPU NVIDIA** con CUDA/cuDNN installati, puoi ottenere trascrizioni molto più veloci anche con i modelli più grandi modificando `device="cpu"` in `device="cuda"` (e `compute_type="int8"` in `"float16"`) in [`stt_service.py`](stt_service.py).
+If you have an **NVIDIA GPU** with CUDA/cuDNN installed, you can get much faster transcription even with the larger models by changing `device="cpu"` to `device="cuda"` (and `compute_type="int8"` to `"float16"`) in [`stt_service.py`](stt_service.py).
 
-Puoi scaricare più modelli e cambiarli in qualsiasi momento da Impostazioni → Lingua e modello, senza reinstallare nulla.
+You can download multiple models and switch between them anytime from Settings → Language and model, no reinstall needed.
 
-## Utilizzo
+## Usage
 
-- Scorciatoia di default: `Control+Alt+Space`, modalità "tieni premuto" (push-to-talk)
-- Cambia scorciatoia, modalità, lingua, modello e output da **Impostazioni** (icona nella system tray)
-- `Esc` o la X sulla pillola annullano ascolto/elaborazione in corso
+- Default shortcut: `Control+Alt+Space`, hold-to-talk mode (push-to-talk)
+- Change the shortcut, activation mode, language, model, and output from **Settings** (tray icon)
+- `Esc` or the X on the pill cancels listening/processing in progress
 
-## Sviluppo
+## Development
 
-Il progetto ha due parti: un backend Python che gestisce microfono e trascrizione, e un'app Electron per interfaccia e scorciatoie globali.
+The project has two parts: a Python backend that handles the microphone and transcription, and an Electron app for the UI and global shortcuts.
 
 ```
 whisper-ai/
-├── stt_service.py        # backend Python: registrazione + trascrizione + gestione modelli
-├── setup_whisper.ps1      # script di setup dell'ambiente Python (venv + faster-whisper)
-├── trascrivi.py           # utility da riga di comando per trascrivere un file audio
-└── WhisperPill/            # app Electron (pillola + impostazioni)
-    ├── main.js              # processo principale: finestre, hotkey, IPC, stato
-    ├── preload.js           # bridge sicuro tra main e renderer
-    ├── sttBridge.js         # gestisce il sottoprocesso Python (protocollo JSON su stdin/stdout)
-    ├── hotkeys.js           # motore scorciatoie globali (uiohook-napi)
-    ├── setupRunner.js       # esegue setup_whisper.ps1 e ne trasmette l'output
-    ├── config.js            # impostazioni persistenti (electron-store)
-    └── renderer/            # HTML/CSS/JS di pillola, impostazioni e setup
+├── stt_service.py        # Python backend: recording + transcription + model management
+├── setup_whisper.ps1      # Python environment setup script (venv + faster-whisper)
+├── trascrivi.py           # command-line utility to transcribe an audio file
+└── WhisperPill/            # Electron app (pill + settings)
+    ├── main.js              # main process: windows, hotkeys, IPC, state
+    ├── preload.js           # secure bridge between main and renderer
+    ├── sttBridge.js         # manages the Python subprocess (JSON protocol over stdin/stdout)
+    ├── hotkeys.js           # global shortcut engine (uiohook-napi)
+    ├── setupRunner.js       # runs setup_whisper.ps1 and streams its output
+    ├── config.js            # persisted settings (electron-store)
+    ├── i18n.js              # UI translation dictionaries (Italian/English)
+    └── renderer/            # HTML/CSS/JS for the pill, settings, and setup windows
 ```
 
-### Backend Python
+### Python backend
 
 ```bash
 python -m venv .venv
 .venv\Scripts\python.exe -m pip install faster-whisper sounddevice huggingface_hub
 ```
 
-(oppure semplicemente esegui `setup_whisper.ps1`, usato anche dall'app stessa).
+(or simply run `setup_whisper.ps1`, which the app itself also uses).
 
-`stt_service.py` comunica tramite righe JSON su stdin/stdout: comandi come `{"cmd": "start"}` in ingresso, eventi come `{"event": "result", "text": "..."}` in uscita. Vedi l'intestazione del file per il protocollo completo.
+`stt_service.py` communicates over JSON lines on stdin/stdout: commands like `{"cmd": "start"}` in, events like `{"event": "result", "text": "..."}` out. See the file's header comment for the full protocol.
 
-### App Electron
+### Electron app
 
 ```bash
 cd WhisperPill
@@ -111,39 +113,41 @@ npm install
 npm start
 ```
 
-Per impostazione predefinita, in modalità sviluppo l'app cerca il backend Python nella cartella padre (`..`, cioè `whisper-ai/`). Una volta impacchettata, punta invece a `~/Documents/claude/whisper-ai` — sovrascrivibile con la variabile d'ambiente `WHISPERPILL_HOME` se il tuo backend vive altrove.
+By default, in development the app looks for the Python backend in the parent folder (`..`, i.e. `whisper-ai/`). Once packaged, it instead looks in `~/Documents/claude/whisper-ai` — overridable with the `WHISPERPILL_HOME` environment variable if your backend lives elsewhere.
 
-### Creare l'installer
+### Building the installer
 
 ```bash
 cd WhisperPill
 npm run dist
 ```
 
-Genera sia l'installer NSIS che la versione portable in `WhisperPill/dist`.
+Produces both the NSIS installer and the portable build in `WhisperPill/dist`.
 
-## Domande frequenti
+## FAQ
 
-**È gratis?** Sì, codice aperto sotto licenza MIT.
+**Is it free?** Yes, open source under the MIT license.
 
-**Serve una connessione internet?** Solo per l'installazione iniziale e per scaricare i modelli la prima volta. La trascrizione vera e propria funziona **offline**.
+**Do I need an internet connection?** Only for the initial setup and to download models the first time. Actual transcription works **offline**.
 
-**L'audio viene inviato a qualche server?** No. Tutto — registrazione e trascrizione — avviene sul tuo PC.
+**Is my audio sent to any server?** No. Everything — recording and transcription — happens on your PC.
 
-**Funziona su macOS o Linux?** No, al momento è pensato solo per Windows (scorciatoie globali, auto-type e installer sono specifici per Windows).
+**Does it work on macOS or Linux?** No, it's currently Windows-only (global shortcuts, auto-type, and the installer are all Windows-specific).
 
-**Quanto è precisa la trascrizione?** Dipende dal modello scelto: vedi [Quale modello scegliere](#quale-modello-scegliere). Con `small` o superiore, l'italiano parlato chiaramente viene trascritto con buona accuratezza.
+**How accurate is the transcription?** It depends on the model you pick: see [Which model should I use](#which-model-should-i-use). With `small` or larger, clearly spoken audio is transcribed with good accuracy.
 
-## Note tecniche
+**Can I use it in a language other than Italian or English?** The interface (menus, settings) is available in Italian and English. Transcription language is separate and configurable independently — Whisper supports dozens of languages, including auto-detection.
 
-- I modelli Whisper vengono scaricati in `whisper-ai/models/<taglia>/` invece della cache di Hugging Face, così l'app sa sempre con certezza cosa è già scaricato.
-- La scorciatoia di attivazione viene riservata anche tramite l'API `globalShortcut` di Electron, per evitare che raggiunga anche l'applicazione in primo piano.
-- Se una trascrizione viene annullata mentre è già in corso, il backend la invalida tramite un numero di generazione: il risultato, se arriva comunque, viene scartato in silenzio.
+## Technical notes
 
-## Licenza
+- Whisper models are downloaded into `whisper-ai/models/<size>/` instead of the Hugging Face cache, so the app always knows with certainty what's already downloaded.
+- The activation shortcut is also reserved through Electron's `globalShortcut` API, to prevent it from also reaching the foreground application.
+- If a transcription is cancelled while already in progress, the backend invalidates it via a generation counter: if the result arrives anyway, it's silently discarded.
 
-[MIT](LICENSE) — vedi il file per il testo completo.
+## License
+
+[MIT](LICENSE) — see the file for the full text.
 
 ---
 
-*Parole chiave: dettatura vocale Windows, speech-to-text locale, trascrizione vocale offline, voice typing app, Whisper AI dictation, push-to-talk transcription, alternativa gratuita a Dragon NaturallySpeaking.*
+*Keywords: Windows voice dictation, local speech-to-text, offline voice transcription, voice typing app, Whisper AI dictation, push-to-talk transcription, free alternative to Dragon NaturallySpeaking.*

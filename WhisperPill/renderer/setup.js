@@ -1,11 +1,6 @@
-const MODEL_INFO = {
-  tiny: { label: "tiny", desc: "Piu' veloce, meno preciso" },
-  base: { label: "base", desc: "Veloce" },
-  small: { label: "small", desc: "Bilanciato (consigliato)" },
-  medium: { label: "medium", desc: "Preciso, piu' lento" },
-  "large-v3": { label: "large", desc: "Massima precisione, lento" },
-};
+const MODEL_LABELS = { tiny: "tiny", base: "base", small: "small", medium: "medium", "large-v3": "large" };
 const DEFAULT_CHECKED = new Set(["small"]);
+let currentPhase = "install";
 
 // ---- fase: installazione ambiente ----
 
@@ -20,19 +15,25 @@ window.whisperPill.onSetupLog((line) => {
   logEl.scrollTop = logEl.scrollHeight;
 });
 
+let lastResult = null;
 window.whisperPill.onSetupDone((result) => {
+  lastResult = result;
   spinner.replaceWith(Object.assign(document.createElement("div"), {
     className: `status-icon ${result.success ? "ok" : "fail"}`,
   }));
-  if (result.success) {
-    statusText.textContent = "Installazione completata";
-    statusSub.textContent = "L'ambiente e' pronto: ora puoi usare la scorciatoia per dettare.";
-  } else {
-    statusText.textContent = "Installazione non riuscita";
-    statusSub.textContent = "Controlla il log qui sotto oppure esegui setup_whisper.ps1 manualmente.";
-  }
+  applyInstallDoneText(result);
   closeBtn.disabled = false;
 });
+
+function applyInstallDoneText(result) {
+  if (result.success) {
+    statusText.textContent = t("setup.installDone");
+    statusSub.textContent = t("setup.installDoneDesc");
+  } else {
+    statusText.textContent = t("setup.installFailed");
+    statusSub.textContent = t("setup.installFailedDesc");
+  }
+}
 
 closeBtn.addEventListener("click", () => window.whisperPill.closeSetupWindow());
 
@@ -49,7 +50,8 @@ let downloading = false;
 function renderModels() {
   modelsListEl.innerHTML = "";
   modelsState.forEach((m) => {
-    const info = MODEL_INFO[m.size] || { label: m.size, desc: "" };
+    const label = MODEL_LABELS[m.size] || m.size;
+    const desc = t(`model.${m.size}.desc`);
     const row = document.createElement("div");
     row.className = "model-row";
     row.dataset.size = m.size;
@@ -64,7 +66,7 @@ function renderModels() {
 
     const infoEl = document.createElement("div");
     infoEl.className = "model-info";
-    infoEl.innerHTML = `<div class="model-name">${info.label}</div><div class="model-desc">${info.desc}</div>`;
+    infoEl.innerHTML = `<div class="model-name">${label}</div><div class="model-desc">${desc}</div>`;
 
     const sizeEl = document.createElement("div");
     sizeEl.className = "model-size";
@@ -73,12 +75,12 @@ function renderModels() {
     const statusEl = document.createElement("div");
     statusEl.className = "model-status";
     if (m.downloaded) {
-      statusEl.textContent = "scaricato";
+      statusEl.textContent = t("settings.models.downloaded");
       statusEl.classList.add("ok");
     } else if (m._progress != null) {
       statusEl.textContent = `${m._progress}%`;
     } else if (m._failed) {
-      statusEl.textContent = "errore";
+      statusEl.textContent = t("setup.error");
       statusEl.classList.add("fail");
     }
 
@@ -98,7 +100,7 @@ function renderModels() {
 }
 
 async function loadModels() {
-  modelsListEl.innerHTML = '<div style="padding:16px;color:var(--text-secondary);font-size:12.5px;">Carico elenco modelli…</div>';
+  modelsListEl.innerHTML = `<div style="padding:16px;color:var(--text-secondary);font-size:12.5px;">${t("setup.loadingModels")}</div>`;
   await window.whisperPill.listModels();
 }
 
@@ -131,13 +133,15 @@ window.whisperPill.onModelDone(({ model, success }) => {
 });
 
 let downloadQueue = [];
+let downloadSessionEnded = false;
 
 function downloadNext() {
   if (downloadQueue.length === 0) {
     downloading = false;
+    downloadSessionEnded = true;
     btnDownload.disabled = false;
-    btnDownload.textContent = "Scarica selezionati";
-    btnSkip.textContent = "Fine";
+    btnDownload.textContent = t("setup.download");
+    btnSkip.textContent = t("setup.finish");
     renderModels();
     return;
   }
@@ -150,7 +154,7 @@ btnDownload.addEventListener("click", () => {
   if (selected.length === 0 || downloading) return;
   downloading = true;
   btnDownload.disabled = true;
-  btnDownload.textContent = "Scaricamento…";
+  btnDownload.textContent = t("setup.downloading");
   downloadQueue = selected.map((m) => m.size);
   renderModels();
   downloadNext();
@@ -160,8 +164,27 @@ btnSkip.addEventListener("click", () => window.whisperPill.closeSetupWindow());
 
 window.whisperPill.onSetupPhase((phase) => {
   if (phase !== "models") return;
+  currentPhase = "models";
   document.getElementById("phase-install").classList.remove("active");
   document.getElementById("phase-models").classList.add("active");
-  titlebarName.textContent = "WhisperPill — Modelli";
+  titlebarName.textContent = `WhisperPill — ${t("settings.nav.models")}`;
   loadModels();
 });
+
+window.onLanguageChanged = () => {
+  if (currentPhase === "models") {
+    titlebarName.textContent = `WhisperPill — ${t("settings.nav.models")}`;
+    if (downloading) {
+      btnDownload.textContent = t("setup.downloading");
+    } else if (downloadSessionEnded) {
+      btnDownload.textContent = t("setup.download");
+      btnSkip.textContent = t("setup.finish");
+    } else {
+      btnDownload.textContent = t("setup.download");
+      btnSkip.textContent = t("setup.skip");
+    }
+    renderModels();
+  } else if (lastResult) {
+    applyInstallDoneText(lastResult);
+  }
+};

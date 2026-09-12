@@ -1,6 +1,6 @@
 {
   "name": "whisperpill",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Pillola flottante per dettare testo in qualsiasi app Windows, con trascrizione locale via faster-whisper",
   "author": "Francesco Flavio Noli",
   "license": "MIT",
@@ -29,6 +29,7 @@
       "hotkeys.js",
       "sttBridge.js",
       "setupRunner.js",
+      "i18n.js",
       "renderer/**/*",
       "assets/**/*",
       "package.json"

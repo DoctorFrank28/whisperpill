@@ -344,95 +344,95 @@
     <div id="titlebar">
       <div class="brand">
         <div class="dot"></div>
-        <div class="name">WhisperPill — Impostazioni</div>
+        <div class="name">WhisperPill — <span data-i18n="settings.title">Impostazioni</span></div>
       </div>
       <div class="win-controls">
-        <button id="win-min" title="Riduci">–</button>
-        <button id="win-close" class="close" title="Chiudi"><span class="icon-x"></span></button>
+        <button id="win-min" data-i18n-title="settings.minimize">–</button>
+        <button id="win-close" class="close" data-i18n-title="settings.close"><span class="icon-x"></span></button>
       </div>
     </div>
 
     <div id="body">
       <div id="sidebar">
-        <div class="nav-item active" data-section="shortcuts">Scorciatoie</div>
-        <div class="nav-item" data-section="output">Output testo</div>
-        <div class="nav-item" data-section="model">Lingua e modello</div>
-        <div class="nav-item" data-section="models">Modelli</div>
-        <div class="nav-item" data-section="mic">Microfono</div>
-        <div class="nav-item" data-section="startup">Avvio</div>
-        <div class="nav-item" data-section="appearance">Aspetto</div>
+        <div class="nav-item active" data-section="shortcuts" data-i18n="settings.nav.shortcuts">Scorciatoie</div>
+        <div class="nav-item" data-section="output" data-i18n="settings.nav.output">Output testo</div>
+        <div class="nav-item" data-section="model" data-i18n="settings.nav.model">Lingua e modello</div>
+        <div class="nav-item" data-section="models" data-i18n="settings.nav.models">Modelli</div>
+        <div class="nav-item" data-section="mic" data-i18n="settings.nav.mic">Microfono</div>
+        <div class="nav-item" data-section="startup" data-i18n="settings.nav.startup">Avvio</div>
+        <div class="nav-item" data-section="appearance" data-i18n="settings.nav.appearance">Aspetto</div>
         <div class="footer">WhisperPill v0.1<br />faster-whisper</div>
       </div>
 
       <div id="content">
         <div class="section active" id="section-shortcuts">
-          <h2>Scorciatoie</h2>
+          <h2 data-i18n="settings.shortcuts.title">Scorciatoie</h2>
           <div class="field-row">
             <div class="field-label">
-              <div class="field-title">Scorciatoia di registrazione</div>
-              <div class="field-desc">Clicca "Riassegna", poi premi la nuova combinazione</div>
+              <div class="field-title" data-i18n="settings.shortcuts.recordingLabel">Scorciatoia di registrazione</div>
+              <div class="field-desc" data-i18n="settings.shortcuts.recordingDesc">Clicca "Riassegna", poi premi la nuova combinazione</div>
             </div>
             <div style="display:flex; align-items:center;" id="shortcut-chips"></div>
           </div>
 
           <div style="display:flex; flex-direction:column; gap:9px; margin-top:8px;">
-            <div class="field-title">Modalita' di attivazione</div>
+            <div class="field-title" data-i18n="settings.shortcuts.activationTitle">Modalita' di attivazione</div>
             <div class="segmented" id="activation-mode">
               <div class="seg-card" data-value="hold">
-                <div class="title">Tieni premuto</div>
-                <div class="sub">Push-to-talk</div>
+                <div class="title" data-i18n="settings.shortcuts.holdTitle">Tieni premuto</div>
+                <div class="sub" data-i18n="settings.shortcuts.holdSub">Push-to-talk</div>
               </div>
               <div class="seg-card" data-value="toggle">
-                <div class="title">Tocca</div>
-                <div class="sub">Avvia / ferma</div>
+                <div class="title" data-i18n="settings.shortcuts.toggleTitle">Tocca</div>
+                <div class="sub" data-i18n="settings.shortcuts.toggleSub">Avvia / ferma</div>
               </div>
               <div class="seg-card" data-value="trayOnly">
-                <div class="title">Solo icona tray</div>
-                <div class="sub">Click sull'icona</div>
+                <div class="title" data-i18n="settings.shortcuts.trayTitle">Solo icona tray</div>
+                <div class="sub" data-i18n="settings.shortcuts.traySub">Click sull'icona</div>
               </div>
             </div>
           </div>
         </div>
 
         <div class="section" id="section-output">
-          <h2>Output testo</h2>
+          <h2 data-i18n="settings.output.title">Output testo</h2>
           <div class="field-row">
             <div class="field-label">
-              <div class="field-title">Copia negli appunti</div>
-              <div class="field-desc">Il testo resta disponibile per Ctrl+V</div>
+              <div class="field-title" data-i18n="settings.output.clipboardLabel">Copia negli appunti</div>
+              <div class="field-desc" data-i18n="settings.output.clipboardDesc">Il testo resta disponibile per Ctrl+V</div>
             </div>
             <div class="switch" data-toggle="outputs.clipboard"><div class="knob"></div></div>
           </div>
           <div class="field-row">
             <div class="field-label">
-              <div class="field-title">Digita nella finestra attiva</div>
-              <div class="field-desc">Auto-type: incolla automaticamente dove stai scrivendo</div>
+              <div class="field-title" data-i18n="settings.output.autotypeLabel">Digita nella finestra attiva</div>
+              <div class="field-desc" data-i18n="settings.output.autotypeDesc">Auto-type: incolla automaticamente dove stai scrivendo</div>
             </div>
             <div class="switch" data-toggle="outputs.autotype"><div class="knob"></div></div>
           </div>
           <div class="field-row">
             <div class="field-label">
-              <div class="field-title">Mostra nella barra</div>
-              <div class="field-desc">Sezione collassabile con il testo completo</div>
+              <div class="field-title" data-i18n="settings.output.showInBarLabel">Mostra nella barra</div>
+              <div class="field-desc" data-i18n="settings.output.showInBarDesc">Sezione collassabile con il testo completo</div>
             </div>
             <div class="switch" data-toggle="outputs.showInBar"><div class="knob"></div></div>
           </div>
         </div>
 
         <div class="section" id="section-model">
-          <h2>Lingua e modello</h2>
+          <h2 data-i18n="settings.model.title">Lingua e modello</h2>
           <div class="field-row">
-            <div class="field-title" style="flex:1;">Lingua di trascrizione</div>
+            <div class="field-title" style="flex:1;" data-i18n="settings.model.transcriptionLanguage">Lingua di trascrizione</div>
             <select class="dropdown" id="language-select">
-              <option value="it">Italiano</option>
-              <option value="en">Inglese</option>
-              <option value="auto">Rilevamento automatico</option>
+              <option value="it" data-i18n="settings.model.langIt">Italiano</option>
+              <option value="en" data-i18n="settings.model.langEn">Inglese</option>
+              <option value="auto" data-i18n="settings.model.langAuto">Rilevamento automatico</option>
             </select>
           </div>
           <div style="display:flex; flex-direction:column; gap:10px;">
             <div style="display:flex; align-items:baseline; gap:10px;">
-              <div class="field-title">Dimensione modello</div>
-              <div class="mono" style="font-size:11px; color:var(--text-secondary);">piu' grande = piu' lento, piu' preciso</div>
+              <div class="field-title" data-i18n="settings.model.sizeTitle">Dimensione modello</div>
+              <div class="mono" style="font-size:11px; color:var(--text-secondary);" data-i18n="settings.model.sizeHint">piu' grande = piu' lento, piu' preciso</div>
             </div>
             <div class="segmented compact" id="model-size">
               <div class="seg-pill" data-value="tiny">tiny</div>
@@ -442,53 +442,64 @@
               <div class="seg-pill" data-value="large-v3">large</div>
             </div>
             <div class="scale-labels">
-              <div>&larr; PIU' VELOCE, MENO PRECISO</div>
-              <div>PIU' PRECISO, PIU' LENTO &rarr;</div>
+              <div data-i18n="settings.model.scaleFast">← PIU' VELOCE, MENO PRECISO</div>
+              <div data-i18n="settings.model.scaleAccurate">PIU' PRECISO, PIU' LENTO →</div>
             </div>
           </div>
         </div>
 
         <div class="section" id="section-models">
-          <h2>Modelli</h2>
-          <div class="field-desc" style="margin-top:-8px;">Scarica o rimuovi i modelli Whisper. Vengono salvati in <span class="mono">whisper-ai/models</span>.</div>
+          <h2 data-i18n="settings.models.title">Modelli</h2>
+          <div class="field-desc" style="margin-top:-8px;" id="models-desc"></div>
           <div id="models-manage-list" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;"></div>
         </div>
 
         <div class="section" id="section-mic">
-          <h2>Microfono</h2>
+          <h2 data-i18n="settings.mic.title">Microfono</h2>
           <div class="field-row">
             <div class="field-label">
-              <div class="field-title">Dispositivo di input</div>
-              <div class="field-desc">Lascia "Predefinito" per usare il microfono di sistema</div>
+              <div class="field-title" data-i18n="settings.mic.deviceLabel">Dispositivo di input</div>
+              <div class="field-desc" data-i18n="settings.mic.deviceDesc">Lascia "Predefinito" per usare il microfono di sistema</div>
             </div>
             <select class="dropdown" id="mic-select">
-              <option value="">Predefinito</option>
+              <option value="" data-i18n="settings.mic.default">Predefinito</option>
             </select>
           </div>
         </div>
 
         <div class="section" id="section-startup">
-          <h2>Avvio</h2>
+          <h2 data-i18n="settings.startup.title">Avvio</h2>
           <div class="field-row">
             <div class="field-label">
-              <div class="field-title">Avvia con Windows</div>
-              <div class="field-desc">WhisperPill resta in background nella system tray</div>
+              <div class="field-title" data-i18n="settings.startup.label">Avvia con Windows</div>
+              <div class="field-desc" data-i18n="settings.startup.desc">WhisperPill resta in background nella system tray</div>
             </div>
             <div class="switch" data-toggle="launchAtStartup"><div class="knob"></div></div>
           </div>
         </div>
 
         <div class="section" id="section-appearance">
-          <h2>Aspetto</h2>
+          <h2 data-i18n="settings.appearance.title">Aspetto</h2>
           <div class="field-row">
             <div class="field-label">
-              <div class="field-title">Tema</div>
-              <div class="field-desc">Auto segue il tema di sistema</div>
+              <div class="field-title" data-i18n="settings.appearance.themeLabel">Tema</div>
+              <div class="field-desc" data-i18n="settings.appearance.themeDesc">Auto segue il tema di sistema</div>
             </div>
             <div class="segmented compact" id="theme-select" style="width:auto;">
-              <div class="seg-pill pill-small" data-value="auto">Auto</div>
-              <div class="seg-pill pill-small" data-value="light">Light</div>
-              <div class="seg-pill pill-small" data-value="dark">Dark</div>
+              <div class="seg-pill pill-small" data-value="auto" data-i18n="settings.appearance.auto">Auto</div>
+              <div class="seg-pill pill-small" data-value="light" data-i18n="settings.appearance.light">Light</div>
+              <div class="seg-pill pill-small" data-value="dark" data-i18n="settings.appearance.dark">Dark</div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">
+              <div class="field-title" data-i18n="settings.appearance.languageLabel">Lingua interfaccia</div>
+              <div class="field-desc" data-i18n="settings.appearance.languageDesc">La lingua di menu e impostazioni</div>
+            </div>
+            <div class="segmented compact" id="ui-language-select" style="width:auto;">
+              <div class="seg-pill pill-small" data-value="auto" data-i18n="settings.appearance.auto">Auto</div>
+              <div class="seg-pill pill-small" data-value="it">Italiano</div>
+              <div class="seg-pill pill-small" data-value="en">English</div>
             </div>
           </div>
         </div>
@@ -496,6 +507,7 @@
     </div>
   </div>
 
+  <script src="i18n-client.js"></script>
   <script src="settings.js"></script>
 </body>
 </html>

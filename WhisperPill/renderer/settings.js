@@ -1,18 +1,16 @@
 let config = null;
-const MODEL_INFO = {
-  tiny: { desc: "Piu' veloce, meno preciso" },
-  base: { desc: "Veloce" },
-  small: { desc: "Bilanciato (consigliato)" },
-  medium: { desc: "Preciso, piu' lento" },
-  "large-v3": { desc: "Massima precisione, lento" },
-};
 let modelsState = [];
+
+function modelDesc(size) {
+  return t(`model.${size}.desc`);
+}
 
 function byId(id) {
   return document.getElementById(id);
 }
 
 async function init() {
+  await window.i18nReady;
   config = await window.whisperPill.getConfig();
   renderShortcutChips(config.shortcut);
   renderActivationMode(config.activationMode);
@@ -23,10 +21,20 @@ async function init() {
   byId("language-select").value = config.language;
   renderSegPills("model-size", config.modelSize);
   renderSegPills("theme-select", config.theme);
+  renderSegPills("ui-language-select", config.uiLanguage);
+  byId("models-desc").innerHTML = t("settings.models.desc", { path: '<span class="mono">whisper-ai/models</span>' });
 
   window.whisperPill.listDevices();
   window.whisperPill.listModels();
 }
+
+window.onLanguageChanged = () => {
+  if (!config) return;
+  byId("models-desc").innerHTML = t("settings.models.desc", { path: '<span class="mono">whisper-ai/models</span>' });
+  renderModelsManageList();
+  const defaultOpt = byId("mic-select").querySelector('option[value=""]');
+  if (defaultOpt) defaultOpt.textContent = t("settings.mic.default");
+};
 
 function renderShortcutChips(accelerator) {
   const container = byId("shortcut-chips");
@@ -47,7 +55,7 @@ function renderShortcutChips(accelerator) {
   const btn = document.createElement("button");
   btn.className = "rebind-btn";
   btn.id = "rebind-btn";
-  btn.textContent = "Riassegna";
+  btn.textContent = t("settings.shortcuts.reassign");
   btn.style.marginLeft = "6px";
   btn.addEventListener("click", beginRebind);
   container.appendChild(btn);
@@ -56,7 +64,7 @@ function renderShortcutChips(accelerator) {
 function beginRebind() {
   const btn = byId("rebind-btn");
   btn.classList.add("capturing");
-  btn.textContent = "Premi la combinazione…";
+  btn.textContent = t("settings.shortcuts.pressCombo");
   window.whisperPill.beginShortcutCapture();
 }
 
@@ -136,6 +144,13 @@ document.querySelectorAll("#theme-select .seg-pill").forEach((el) => {
   });
 });
 
+document.querySelectorAll("#ui-language-select .seg-pill").forEach((el) => {
+  el.addEventListener("click", () => {
+    renderSegPills("ui-language-select", el.dataset.value);
+    patchConfig({ uiLanguage: el.dataset.value });
+  });
+});
+
 byId("language-select").addEventListener("change", (e) => {
   patchConfig({ language: e.target.value });
 });
@@ -148,7 +163,7 @@ byId("mic-select").addEventListener("change", (e) => {
 window.whisperPill.onDevices((devices) => {
   const select = byId("mic-select");
   const current = config.micDevice;
-  select.innerHTML = '<option value="">Predefinito</option>';
+  select.innerHTML = `<option value="">${t("settings.mic.default")}</option>`;
   devices.forEach((d) => {
     const opt = document.createElement("option");
     opt.value = String(d.index);
@@ -167,13 +182,12 @@ function renderModelsManageList() {
   const container = byId("models-manage-list");
   container.innerHTML = "";
   modelsState.forEach((m) => {
-    const info = MODEL_INFO[m.size] || { desc: "" };
     const row = document.createElement("div");
     row.className = "model-row";
 
     const infoEl = document.createElement("div");
     infoEl.className = "model-info";
-    infoEl.innerHTML = `<div class="model-name">${m.size}</div><div class="model-desc-small">${info.desc}</div>`;
+    infoEl.innerHTML = `<div class="model-name">${m.size}</div><div class="model-desc-small">${modelDesc(m.size)}</div>`;
 
     const sizeEl = document.createElement("div");
     sizeEl.className = "model-size";
@@ -194,13 +208,13 @@ function renderModelsManageList() {
     } else if (m.downloaded) {
       const btn = document.createElement("button");
       btn.className = "model-action-btn delete";
-      btn.textContent = "Elimina";
+      btn.textContent = t("settings.models.delete");
       btn.addEventListener("click", () => window.whisperPill.deleteModel(m.size));
       row.appendChild(btn);
     } else {
       const btn = document.createElement("button");
       btn.className = "model-action-btn download";
-      btn.textContent = m._failed ? "Riprova" : "Scarica";
+      btn.textContent = m._failed ? t("settings.models.retry") : t("settings.models.download");
       btn.addEventListener("click", () => {
         m._failed = false;
         window.whisperPill.downloadModel(m.size);

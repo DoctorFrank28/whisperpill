@@ -53,4 +53,9 @@ contextBridge.exposeInMainWorld("whisperPill", {
   onModelDeleted: (callback) => {
     ipcRenderer.on("models:deleted", (_event, payload) => callback(payload));
   },
+
+  getI18n: () => ipcRenderer.invoke("i18n:get"),
+  onI18nChanged: (callback) => {
+    ipcRenderer.on("i18n:changed", (_event, payload) => callback(payload));
+  },
 });

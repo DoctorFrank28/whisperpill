@@ -20,6 +20,7 @@ const cards = {
 
 let timerInterval = null;
 let lastResult = null;
+let lastState = null;
 
 function hideAllCards() {
   Object.values(cards).forEach((el) => el.classList.remove("visible"));
@@ -45,7 +46,8 @@ function stopTimer() {
 }
 
 function render(state) {
-  if (state.kind !== "listening") stopTimer();
+  lastState = state;
+  stopTimer();
 
   switch (state.kind) {
     case "idle":
@@ -73,7 +75,8 @@ function render(state) {
       lastResult = state;
       if (state.expanded) {
         const modelLabel = state.model ? ` · ${state.model.toUpperCase()}` : "";
-        document.getElementById("expanded-title").textContent = `TRASCRIZIONE · ${state.words || 0} PAROLE${modelLabel}`;
+        document.getElementById("expanded-title").textContent =
+          `${t("pill.transcriptionLabel")} · ${state.words || 0} ${t("pill.words").toUpperCase()}${modelLabel}`;
         document.getElementById("expanded-text").textContent = state.text;
         document.getElementById("expanded-hint").innerHTML = hintsMarkup(state, true);
         showCard(cards.resultExpanded);
@@ -91,7 +94,7 @@ function render(state) {
       break;
 
     case "error":
-      document.getElementById("error-text").textContent = state.message || "Errore";
+      document.getElementById("error-text").textContent = state.message || t("pill.noSpeechDetected");
       showCard(cards.error);
       break;
 
@@ -102,18 +105,22 @@ function render(state) {
 
 function hintsMarkup(state, expanded, standalone) {
   const parts = [];
-  if (state.copied) parts.push(`<span class="ok">✓ copiato</span>`);
-  if (state.typed) parts.push(`<span class="ok">✓ digitato</span>`);
+  if (state.copied) parts.push(`<span class="ok">✓ ${t("pill.copied")}</span>`);
+  if (state.typed) parts.push(`<span class="ok">✓ ${t("pill.typed")}</span>`);
   if (!standalone && state.words != null) {
     const model = state.model ? ` · ${state.model}` : "";
     const elapsed = state.elapsed != null ? ` · ${state.elapsed}s` : "";
-    parts.push(`<span>${state.words} parole${model}${elapsed}</span>`);
+    parts.push(`<span>${state.words} ${t("pill.words")}${model}${elapsed}</span>`);
   }
-  if (standalone && !parts.length) parts.push(`<span>Fatto</span>`);
+  if (standalone && !parts.length) parts.push(`<span>${t("pill.done")}</span>`);
   return parts.join(" · ");
 }
 
 window.whisperPill.onState(render);
+
+window.onLanguageChanged = () => {
+  if (lastState) render(lastState);
+};
 
 document.getElementById("btn-copy").addEventListener("click", () => {
   if (lastResult) window.whisperPill.copyText(lastResult.text);
