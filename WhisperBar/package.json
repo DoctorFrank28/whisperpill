@@ -2,7 +2,8 @@
   "name": "whisperbar",
   "version": "0.1.0",
   "description": "Pillola flottante per trascrizione vocale con faster-whisper",
-  "author": "Francesco",
+  "author": "Francesco Flavio Noli",
+  "license": "MIT",
   "main": "main.js",
   "private": true,
   "scripts": {
