@@ -39,14 +39,18 @@ let computeStatus = { gpuAvailable: null, lastActualDevice: null, fallbackMessag
 
 function renderComputeStatus() {
   const el = byId("compute-status-note");
+  const installRow = byId("gpu-install-row");
   if (!computeStatus) {
     el.textContent = "";
+    installRow.style.display = "none";
     return;
   }
   if (computeStatus.fallbackMessage) {
     el.textContent = t("settings.model.computeFallback");
+    installRow.style.display = gpuInstallRunning ? "none" : "block";
     return;
   }
+  installRow.style.display = "none";
   if (computeStatus.lastActualDevice === "cuda") {
     el.textContent = t("settings.model.computeUsingGpu");
     return;
@@ -65,6 +69,36 @@ function renderComputeStatus() {
 window.whisperPill.onComputeStatus((status) => {
   computeStatus = status;
   renderComputeStatus();
+});
+
+let gpuInstallRunning = false;
+
+byId("gpu-install-btn").addEventListener("click", () => {
+  if (gpuInstallRunning) return;
+  gpuInstallRunning = true;
+  const btn = byId("gpu-install-btn");
+  btn.disabled = true;
+  btn.textContent = t("settings.model.computeInstalling");
+  const logEl = byId("gpu-install-log");
+  logEl.textContent = "";
+  logEl.style.display = "block";
+  window.whisperPill.installGpuLibs();
+});
+
+window.whisperPill.onGpuInstallLog((line) => {
+  const logEl = byId("gpu-install-log");
+  logEl.textContent += line + "\n";
+  logEl.scrollTop = logEl.scrollHeight;
+});
+
+window.whisperPill.onGpuInstallDone((result) => {
+  gpuInstallRunning = false;
+  const btn = byId("gpu-install-btn");
+  btn.disabled = false;
+  btn.textContent = t("settings.model.computeInstallBtn");
+  if (!result.success) {
+    byId("gpu-install-log").textContent += `\n${t("settings.model.computeInstallFailed")}\n`;
+  }
 });
 
 window.onLanguageChanged = () => {

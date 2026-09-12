@@ -73,7 +73,10 @@ const IT = {
   "settings.model.computeUsingGpu": "In uso: GPU NVIDIA",
   "settings.model.computeUsingCpu": "In uso: CPU",
   "settings.model.computeNoGpu": "Nessuna GPU NVIDIA rilevata: verra' usata la CPU",
-  "settings.model.computeFallback": "GPU non utilizzabile (mancano le librerie CUDA): uso la CPU. Per abilitarla: pip install nvidia-cublas-cu12 nvidia-cudnn-cu12",
+  "settings.model.computeFallback": "GPU rilevata ma non utilizzabile (mancano le librerie CUDA): per ora uso la CPU.",
+  "settings.model.computeInstallBtn": "Installa librerie GPU",
+  "settings.model.computeInstalling": "Installazione in corso…",
+  "settings.model.computeInstallFailed": "Installazione non riuscita. Controlla la connessione e riprova.",
 
   "settings.models.title": "Modelli",
   "settings.models.desc": "Scarica o rimuovi i modelli Whisper. Vengono salvati in {path}.",
@@ -203,7 +206,10 @@ const EN = {
   "settings.model.computeUsingGpu": "Using: NVIDIA GPU",
   "settings.model.computeUsingCpu": "Using: CPU",
   "settings.model.computeNoGpu": "No NVIDIA GPU detected: CPU will be used",
-  "settings.model.computeFallback": "GPU not usable (missing CUDA libraries): falling back to CPU. To enable it: pip install nvidia-cublas-cu12 nvidia-cudnn-cu12",
+  "settings.model.computeFallback": "GPU detected but not usable (missing CUDA libraries): using CPU for now.",
+  "settings.model.computeInstallBtn": "Install GPU libraries",
+  "settings.model.computeInstalling": "Installing…",
+  "settings.model.computeInstallFailed": "Installation failed. Check your connection and try again.",
 
   "settings.models.title": "Models",
   "settings.models.desc": "Download or remove Whisper models. They're saved in {path}.",

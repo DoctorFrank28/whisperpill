@@ -13,6 +13,7 @@ Comandi in ingresso (stdin):
     {"cmd": "list_models"}
     {"cmd": "download_model", "model": "small"}
     {"cmd": "delete_model", "model": "small"}
+    {"cmd": "reload_model"}
     {"cmd": "shutdown"}
 
 Eventi in uscita (stdout):
@@ -357,10 +358,23 @@ class Service:
             self.stop_recording()
         elif cmd == "abort":
             self.abort()
+        elif cmd == "reload_model":
+            threading.Thread(target=self._reload_model_and_report, daemon=True).start()
         elif cmd == "shutdown":
             sys.exit(0)
         else:
             emit({"event": "error", "message": f"Comando sconosciuto: {cmd}"})
+
+    def _reload_model_and_report(self):
+        """Forza un nuovo tentativo di caricamento (es. dopo aver installato
+        le librerie CUDA mancanti), invece di aspettare la prossima dettatura."""
+        self.model = None
+        self.loaded_model_size = None
+        self.loaded_device = None
+        try:
+            self.ensure_model()
+        except Exception as exc:  # noqa: BLE001
+            emit({"event": "error", "message": str(exc)})
 
     def _download_and_report(self, size):
         if not size:

@@ -5,7 +5,7 @@ const { exec } = require("child_process");
 const { store, defaults } = require("./config");
 const { SttBridge, MODEL_SIZES, anyModelDownloaded } = require("./sttBridge");
 const { HotkeyEngine } = require("./hotkeys");
-const { whisperEnvironmentExists, setupScriptExists, runSetup, SETUP_SCRIPT } = require("./setupRunner");
+const { whisperEnvironmentExists, setupScriptExists, runSetup, installGpuSupport, SETUP_SCRIPT } = require("./setupRunner");
 const { DICTS, translate } = require("./i18n");
 
 const PILL_WIDTH = 560;
@@ -583,6 +583,26 @@ ipcMain.handle("i18n:get", () => getI18nPayload());
 ipcMain.handle("app:getVersion", () => app.getVersion());
 
 ipcMain.handle("system:getComputeStatus", () => computeStatus);
+
+let gpuInstallRunning = false;
+ipcMain.on("gpu:installLibs", (event) => {
+  if (gpuInstallRunning) return;
+  gpuInstallRunning = true;
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const emitter = installGpuSupport();
+  emitter.on("line", (line) => {
+    if (win && !win.isDestroyed()) win.webContents.send("gpu:installLog", line);
+  });
+  emitter.on("done", (result) => {
+    gpuInstallRunning = false;
+    if (win && !win.isDestroyed()) win.webContents.send("gpu:installDone", result);
+    if (result.success) {
+      // Non aspettare la prossima dettatura per sapere se e' andata bene:
+      // il backend riprova subito il caricamento e aggiorna computeStatus.
+      sttBridge.reloadModel();
+    }
+  });
+});
 
 ipcMain.handle("devices:list", () => {
   sttBridge.listDevices();
