@@ -113,23 +113,23 @@ function hintsMarkup(state, expanded, standalone) {
   return parts.join(" · ");
 }
 
-window.whisperBar.onState(render);
+window.whisperPill.onState(render);
 
 document.getElementById("btn-copy").addEventListener("click", () => {
-  if (lastResult) window.whisperBar.copyText(lastResult.text);
+  if (lastResult) window.whisperPill.copyText(lastResult.text);
 });
 document.getElementById("btn-copy-2").addEventListener("click", () => {
-  if (lastResult) window.whisperBar.copyText(lastResult.text);
+  if (lastResult) window.whisperPill.copyText(lastResult.text);
 });
-document.getElementById("btn-expand").addEventListener("click", () => window.whisperBar.requestExpand());
-document.getElementById("result-preview").addEventListener("click", () => window.whisperBar.requestExpand());
-document.getElementById("btn-collapse").addEventListener("click", () => window.whisperBar.requestCollapse());
-document.getElementById("btn-close").addEventListener("click", () => window.whisperBar.requestClose());
+document.getElementById("btn-expand").addEventListener("click", () => window.whisperPill.requestExpand());
+document.getElementById("result-preview").addEventListener("click", () => window.whisperPill.requestExpand());
+document.getElementById("btn-collapse").addEventListener("click", () => window.whisperPill.requestCollapse());
+document.getElementById("btn-close").addEventListener("click", () => window.whisperPill.requestClose());
 document.querySelectorAll(".btn-dismiss").forEach((btn) => {
-  btn.addEventListener("click", () => window.whisperBar.requestClose());
+  btn.addEventListener("click", () => window.whisperPill.requestClose());
 });
 document.querySelectorAll(".btn-abort").forEach((btn) => {
-  btn.addEventListener("click", () => window.whisperBar.requestAbort());
+  btn.addEventListener("click", () => window.whisperPill.requestAbort());
 });
 
 // Il BrowserWindow copre un'area trasparente piu' grande della pillola visibile:
@@ -140,10 +140,10 @@ let wasOverCard = false;
 document.addEventListener("mousemove", (e) => {
   const el = document.elementFromPoint(e.clientX, e.clientY);
   const overCard = !!(el && el.closest(".pill-card"));
-  window.whisperBar.setIgnoreMouseEvents(!overCard);
+  window.whisperPill.setIgnoreMouseEvents(!overCard);
   if (overCard !== wasOverCard) {
     wasOverCard = overCard;
-    if (overCard) window.whisperBar.pillHoverEnter();
-    else window.whisperBar.pillHoverLeave();
+    if (overCard) window.whisperPill.pillHoverEnter();
+    else window.whisperPill.pillHoverLeave();
   }
 });

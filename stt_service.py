@@ -1,5 +1,5 @@
 """
-stt_service.py - servizio persistente di registrazione + trascrizione per WhisperBar.
+stt_service.py - servizio persistente di registrazione + trascrizione per WhisperPill.
 
 Comunica su stdin/stdout con righe JSON (una per riga), pensato per essere
 lanciato come sottoprocesso dall'app Electron.
@@ -56,7 +56,7 @@ SAMPLE_RATE = 16000
 
 MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
 
-# Solo le taglie esposte nell'interfaccia di WhisperBar.
+# Solo le taglie esposte nell'interfaccia di WhisperPill.
 MODEL_REPOS = {
     "tiny": "Systran/faster-whisper-tiny",
     "base": "Systran/faster-whisper-base",

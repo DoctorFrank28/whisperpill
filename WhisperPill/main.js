@@ -87,7 +87,7 @@ function createPillWindow() {
   pillWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   positionPillWindow();
   pillWindow.loadFile(path.join(__dirname, "renderer", "pill.html"));
-  if (process.env.WHISPERBAR_DEBUG_CONSOLE) {
+  if (process.env.WHISPERPILL_DEBUG_CONSOLE) {
     pillWindow.webContents.on("console-message", (_e, level, message) => console.log("[pill]", level, message));
   }
 
@@ -318,7 +318,7 @@ function simulatePaste() {
 function createTray() {
   const icon = nativeImage.createFromPath(path.join(__dirname, "assets", "icon.png"));
   tray = new Tray(icon);
-  tray.setToolTip("WhisperBar");
+  tray.setToolTip("WhisperPill");
   updateTrayMenu();
   tray.on("click", () => {
     const cfg = getConfig();
@@ -366,7 +366,7 @@ function openSetupWindow() {
   setupWindow.webContents.once("did-finish-load", () => {
     if (setupWindow) setupWindow._wbReady = true;
   });
-  if (process.env.WHISPERBAR_DEBUG_CONSOLE) {
+  if (process.env.WHISPERPILL_DEBUG_CONSOLE) {
     setupWindow.webContents.on("console-message", (_e, level, message) => console.log("[setup]", level, message));
   }
   setupWindow.on("closed", () => {
@@ -393,14 +393,14 @@ async function ensureWhisperEnvironment() {
   if (!setupScriptExists()) {
     dialog.showErrorBox(
       "Ambiente whisper non trovato",
-      `Non trovo ne' l'ambiente Python ne' lo script di setup in:\n${SETUP_SCRIPT}\n\nReinstalla whisper-ai manualmente prima di usare WhisperBar.`
+      `Non trovo ne' l'ambiente Python ne' lo script di setup in:\n${SETUP_SCRIPT}\n\nReinstalla whisper-ai manualmente prima di usare WhisperPill.`
     );
     return false;
   }
 
   const choice = dialog.showMessageBoxSync({
     type: "question",
-    title: "WhisperBar",
+    title: "WhisperPill",
     message: "L'ambiente di trascrizione non e' ancora installato.",
     detail: "Vuoi installarlo ora? Verranno scaricati alcuni pacchetti Python (serve una connessione internet).",
     buttons: ["Installa ora", "Piu' tardi"],
@@ -464,7 +464,7 @@ function openSettingsWindow() {
   settingsWindow.setMenuBarVisibility(false);
   settingsWindow.loadFile(path.join(__dirname, "renderer", "settings.html"));
   settingsWindow.once("ready-to-show", () => settingsWindow.show());
-  if (process.env.WHISPERBAR_DEBUG_CONSOLE) {
+  if (process.env.WHISPERPILL_DEBUG_CONSOLE) {
     settingsWindow.webContents.on("console-message", (_e, level, message) => console.log("[settings]", level, message));
   }
   settingsWindow.on("closed", () => {
@@ -552,7 +552,7 @@ app.whenReady().then(async () => {
 
   createPillWindow();
   createTray();
-  if (process.env.WHISPERBAR_DEBUG_OPEN_SETTINGS) openSettingsWindow();
+  if (process.env.WHISPERPILL_DEBUG_OPEN_SETTINGS) openSettingsWindow();
 
   const envReady = await ensureWhisperEnvironment();
 
@@ -582,7 +582,7 @@ app.whenReady().then(async () => {
 });
 
 app.on("window-all-closed", (e) => {
-  // WhisperBar vive nella tray: non chiudere l'app quando si chiude una finestra.
+  // WhisperPill vive nella tray: non chiudere l'app quando si chiude una finestra.
   e.preventDefault?.();
 });
 

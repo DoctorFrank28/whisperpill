@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-contextBridge.exposeInMainWorld("whisperBar", {
+contextBridge.exposeInMainWorld("whisperPill", {
   onState: (callback) => {
     ipcRenderer.on("state", (_event, payload) => callback(payload));
   },

@@ -5,14 +5,14 @@ const { EventEmitter } = require("events");
 const fs = require("fs");
 const { app } = require("electron");
 
-// In sviluppo, il backend Python vive nella cartella padre di WhisperBar/.
+// In sviluppo, il backend Python vive nella cartella padre di WhisperPill/.
 // Una volta impacchettata (electron-builder), __dirname finisce dentro
 // resources/app.asar e quella cartella non esiste piu': l'app punta quindi
 // alla cartella dove vive l'ambiente .venv, sovrascrivibile con la variabile
-// d'ambiente WHISPERBAR_HOME se il backend non e' in quella di default.
+// d'ambiente WHISPERPILL_HOME se il backend non e' in quella di default.
 const DEV_WHISPER_DIR = path.join(__dirname, "..");
 const INSTALLED_WHISPER_DIR =
-  process.env.WHISPERBAR_HOME || path.join(os.homedir(), "Documents", "claude", "whisper-ai");
+  process.env.WHISPERPILL_HOME || path.join(os.homedir(), "Documents", "claude", "whisper-ai");
 const WHISPER_DIR = app.isPackaged ? INSTALLED_WHISPER_DIR : DEV_WHISPER_DIR;
 const PYTHON_EXE = path.join(WHISPER_DIR, ".venv", "Scripts", "python.exe");
 const SERVICE_SCRIPT = path.join(WHISPER_DIR, "stt_service.py");

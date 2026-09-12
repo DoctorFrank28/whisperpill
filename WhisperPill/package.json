@@ -1,7 +1,7 @@
 {
-  "name": "whisperbar",
+  "name": "whisperpill",
   "version": "0.1.0",
-  "description": "Pillola flottante per trascrizione vocale con faster-whisper",
+  "description": "Pillola flottante per dettare testo in qualsiasi app Windows, con trascrizione locale via faster-whisper",
   "author": "Francesco Flavio Noli",
   "license": "MIT",
   "main": "main.js",
@@ -19,8 +19,8 @@
     "electron-builder": "^24.13.3"
   },
   "build": {
-    "appId": "com.francesco.whisperbar",
-    "productName": "WhisperBar",
+    "appId": "com.francesco.whisperpill",
+    "productName": "WhisperPill",
     "asar": true,
     "files": [
       "main.js",
@@ -48,10 +48,10 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "WhisperBar"
+      "shortcutName": "WhisperPill"
     },
     "portable": {
-      "artifactName": "WhisperBar-${version}-portable.exe"
+      "artifactName": "WhisperPill-${version}-portable.exe"
     }
   }
 }

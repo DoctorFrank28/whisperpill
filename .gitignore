@@ -3,5 +3,6 @@ __pycache__/
 *.pyc
 models/
 
-WhisperBar/node_modules/
-WhisperBar/dist/
+WhisperPill/node_modules/
+WhisperPill/dist/
+WhisperPill/dist-new/

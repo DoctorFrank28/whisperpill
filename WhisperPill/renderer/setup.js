@@ -15,12 +15,12 @@ const statusSub = document.getElementById("status-sub");
 const spinner = document.getElementById("status-spinner");
 const closeBtn = document.getElementById("btn-close");
 
-window.whisperBar.onSetupLog((line) => {
+window.whisperPill.onSetupLog((line) => {
   logEl.textContent += line + "\n";
   logEl.scrollTop = logEl.scrollHeight;
 });
 
-window.whisperBar.onSetupDone((result) => {
+window.whisperPill.onSetupDone((result) => {
   spinner.replaceWith(Object.assign(document.createElement("div"), {
     className: `status-icon ${result.success ? "ok" : "fail"}`,
   }));
@@ -34,7 +34,7 @@ window.whisperBar.onSetupDone((result) => {
   closeBtn.disabled = false;
 });
 
-closeBtn.addEventListener("click", () => window.whisperBar.closeSetupWindow());
+closeBtn.addEventListener("click", () => window.whisperPill.closeSetupWindow());
 
 // ---- fase: scelta modelli ----
 
@@ -99,10 +99,10 @@ function renderModels() {
 
 async function loadModels() {
   modelsListEl.innerHTML = '<div style="padding:16px;color:var(--text-secondary);font-size:12.5px;">Carico elenco modelli…</div>';
-  await window.whisperBar.listModels();
+  await window.whisperPill.listModels();
 }
 
-window.whisperBar.onModels((list) => {
+window.whisperPill.onModels((list) => {
   modelsState = list.map((m) => {
     const prev = modelsState.find((p) => p.size === m.size);
     return { ...m, _checked: prev?._checked, _progress: prev?._progress, _failed: prev?._failed };
@@ -110,7 +110,7 @@ window.whisperBar.onModels((list) => {
   renderModels();
 });
 
-window.whisperBar.onModelProgress(({ model, percent }) => {
+window.whisperPill.onModelProgress(({ model, percent }) => {
   const m = modelsState.find((x) => x.size === model);
   if (m) {
     m._progress = percent;
@@ -119,7 +119,7 @@ window.whisperBar.onModelProgress(({ model, percent }) => {
   }
 });
 
-window.whisperBar.onModelDone(({ model, success }) => {
+window.whisperPill.onModelDone(({ model, success }) => {
   const m = modelsState.find((x) => x.size === model);
   if (m) {
     m._progress = null;
@@ -142,7 +142,7 @@ function downloadNext() {
     return;
   }
   const size = downloadQueue.shift();
-  window.whisperBar.downloadModel(size);
+  window.whisperPill.downloadModel(size);
 }
 
 btnDownload.addEventListener("click", () => {
@@ -156,12 +156,12 @@ btnDownload.addEventListener("click", () => {
   downloadNext();
 });
 
-btnSkip.addEventListener("click", () => window.whisperBar.closeSetupWindow());
+btnSkip.addEventListener("click", () => window.whisperPill.closeSetupWindow());
 
-window.whisperBar.onSetupPhase((phase) => {
+window.whisperPill.onSetupPhase((phase) => {
   if (phase !== "models") return;
   document.getElementById("phase-install").classList.remove("active");
   document.getElementById("phase-models").classList.add("active");
-  titlebarName.textContent = "WhisperBar — Modelli";
+  titlebarName.textContent = "WhisperPill — Modelli";
   loadModels();
 });

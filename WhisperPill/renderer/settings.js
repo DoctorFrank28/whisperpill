@@ -13,7 +13,7 @@ function byId(id) {
 }
 
 async function init() {
-  config = await window.whisperBar.getConfig();
+  config = await window.whisperPill.getConfig();
   renderShortcutChips(config.shortcut);
   renderActivationMode(config.activationMode);
   renderToggle("outputs.clipboard", config.outputs.clipboard);
@@ -24,8 +24,8 @@ async function init() {
   renderSegPills("model-size", config.modelSize);
   renderSegPills("theme-select", config.theme);
 
-  window.whisperBar.listDevices();
-  window.whisperBar.listModels();
+  window.whisperPill.listDevices();
+  window.whisperPill.listModels();
 }
 
 function renderShortcutChips(accelerator) {
@@ -57,10 +57,10 @@ function beginRebind() {
   const btn = byId("rebind-btn");
   btn.classList.add("capturing");
   btn.textContent = "Premi la combinazione…";
-  window.whisperBar.beginShortcutCapture();
+  window.whisperPill.beginShortcutCapture();
 }
 
-window.whisperBar.onShortcutCaptured((accelerator) => {
+window.whisperPill.onShortcutCaptured((accelerator) => {
   config.shortcut = accelerator;
   renderShortcutChips(accelerator);
 });
@@ -87,7 +87,7 @@ function renderToggle(path, value) {
 }
 
 async function patchConfig(patch) {
-  config = await window.whisperBar.setConfig(patch);
+  config = await window.whisperPill.setConfig(patch);
 }
 
 // ---- event wiring ----
@@ -145,7 +145,7 @@ byId("mic-select").addEventListener("change", (e) => {
   patchConfig({ micDevice: value });
 });
 
-window.whisperBar.onDevices((devices) => {
+window.whisperPill.onDevices((devices) => {
   const select = byId("mic-select");
   const current = config.micDevice;
   select.innerHTML = '<option value="">Predefinito</option>';
@@ -158,8 +158,8 @@ window.whisperBar.onDevices((devices) => {
   if (current != null) select.value = String(current);
 });
 
-byId("win-min").addEventListener("click", () => window.whisperBar.minimizeWindow());
-byId("win-close").addEventListener("click", () => window.whisperBar.closeWindow());
+byId("win-min").addEventListener("click", () => window.whisperPill.minimizeWindow());
+byId("win-close").addEventListener("click", () => window.whisperPill.closeWindow());
 
 // ---- gestione modelli ----
 
@@ -195,7 +195,7 @@ function renderModelsManageList() {
       const btn = document.createElement("button");
       btn.className = "model-action-btn delete";
       btn.textContent = "Elimina";
-      btn.addEventListener("click", () => window.whisperBar.deleteModel(m.size));
+      btn.addEventListener("click", () => window.whisperPill.deleteModel(m.size));
       row.appendChild(btn);
     } else {
       const btn = document.createElement("button");
@@ -203,7 +203,7 @@ function renderModelsManageList() {
       btn.textContent = m._failed ? "Riprova" : "Scarica";
       btn.addEventListener("click", () => {
         m._failed = false;
-        window.whisperBar.downloadModel(m.size);
+        window.whisperPill.downloadModel(m.size);
       });
       row.appendChild(btn);
     }
@@ -212,7 +212,7 @@ function renderModelsManageList() {
   });
 }
 
-window.whisperBar.onModels((list) => {
+window.whisperPill.onModels((list) => {
   modelsState = list.map((m) => {
     const prev = modelsState.find((p) => p.size === m.size);
     return { ...m, _progress: prev?._progress ?? null, _failed: prev?._failed ?? false };
@@ -220,7 +220,7 @@ window.whisperBar.onModels((list) => {
   renderModelsManageList();
 });
 
-window.whisperBar.onModelProgress(({ model, percent }) => {
+window.whisperPill.onModelProgress(({ model, percent }) => {
   const m = modelsState.find((x) => x.size === model);
   if (m) {
     m._progress = percent;
@@ -228,7 +228,7 @@ window.whisperBar.onModelProgress(({ model, percent }) => {
   }
 });
 
-window.whisperBar.onModelDone(({ model, success }) => {
+window.whisperPill.onModelDone(({ model, success }) => {
   const m = modelsState.find((x) => x.size === model);
   if (m) {
     m._progress = null;
@@ -238,7 +238,7 @@ window.whisperBar.onModelDone(({ model, success }) => {
   }
 });
 
-window.whisperBar.onModelDeleted(({ model }) => {
+window.whisperPill.onModelDeleted(({ model }) => {
   const m = modelsState.find((x) => x.size === model);
   if (m) {
     m.downloaded = false;

@@ -1,7 +1,7 @@
 const Store = require("electron-store");
 
 const defaults = {
-  shortcut: "Control+Shift+Space",
+  shortcut: "Control+Alt+Space",
   activationMode: "hold", // "hold" | "toggle" | "trayOnly"
   outputs: {
     clipboard: true,
