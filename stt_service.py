@@ -44,6 +44,12 @@ from faster_whisper import WhisperModel
 from huggingface_hub import snapshot_download
 from tqdm.auto import tqdm as _base_tqdm
 
+# Su Windows, quando lo stdout/stdin di Python e' una pipe (non una console),
+# la codifica di default e' quella ANSI di sistema (es. cp1252) e non UTF-8:
+# le lettere accentate finivano corrotte nel JSON letto da Electron.
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stdin.reconfigure(encoding="utf-8")
+
 SAMPLE_RATE = 16000
 
 MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
