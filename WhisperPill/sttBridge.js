@@ -79,8 +79,8 @@ class SttBridge extends EventEmitter {
     }
   }
 
-  setConfig({ language, model, device }) {
-    this._send({ cmd: "config", language, model, device });
+  setConfig({ language, model, device, computeDevice }) {
+    this._send({ cmd: "config", language, model, device, computeDevice });
   }
 
   listDevices() {

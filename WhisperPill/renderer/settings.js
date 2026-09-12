@@ -22,19 +22,56 @@ async function init() {
   renderSegPills("model-size", config.modelSize);
   renderSegPills("theme-select", config.theme);
   renderSegPills("ui-language-select", config.uiLanguage);
+  renderSegPills("compute-device", config.computeDevice);
   byId("models-desc").innerHTML = t("settings.models.desc", { path: '<span class="mono">whisper-ai/models</span>' });
 
   const version = await window.whisperPill.getVersion();
   byId("app-footer").innerHTML = `WhisperPill v${version}<br />faster-whisper`;
 
+  computeStatus = await window.whisperPill.getComputeStatus();
+  renderComputeStatus();
+
   window.whisperPill.listDevices();
   window.whisperPill.listModels();
 }
+
+let computeStatus = { gpuAvailable: null, lastActualDevice: null, fallbackMessage: null };
+
+function renderComputeStatus() {
+  const el = byId("compute-status-note");
+  if (!computeStatus) {
+    el.textContent = "";
+    return;
+  }
+  if (computeStatus.fallbackMessage) {
+    el.textContent = t("settings.model.computeFallback");
+    return;
+  }
+  if (computeStatus.lastActualDevice === "cuda") {
+    el.textContent = t("settings.model.computeUsingGpu");
+    return;
+  }
+  if (computeStatus.lastActualDevice === "cpu") {
+    el.textContent = t("settings.model.computeUsingCpu");
+    return;
+  }
+  if (computeStatus.gpuAvailable === false) {
+    el.textContent = t("settings.model.computeNoGpu");
+    return;
+  }
+  el.textContent = "";
+}
+
+window.whisperPill.onComputeStatus((status) => {
+  computeStatus = status;
+  renderComputeStatus();
+});
 
 window.onLanguageChanged = () => {
   if (!config) return;
   byId("models-desc").innerHTML = t("settings.models.desc", { path: '<span class="mono">whisper-ai/models</span>' });
   renderModelsManageList();
+  renderComputeStatus();
   const defaultOpt = byId("mic-select").querySelector('option[value=""]');
   if (defaultOpt) defaultOpt.textContent = t("settings.mic.default");
 };
@@ -137,6 +174,13 @@ document.querySelectorAll("#model-size .seg-pill").forEach((el) => {
   el.addEventListener("click", () => {
     renderSegPills("model-size", el.dataset.value);
     patchConfig({ modelSize: el.dataset.value });
+  });
+});
+
+document.querySelectorAll("#compute-device .seg-pill").forEach((el) => {
+  el.addEventListener("click", () => {
+    renderSegPills("compute-device", el.dataset.value);
+    patchConfig({ computeDevice: el.dataset.value });
   });
 });
 

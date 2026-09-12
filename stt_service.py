@@ -5,7 +5,7 @@ Comunica su stdin/stdout con righe JSON (una per riga), pensato per essere
 lanciato come sottoprocesso dall'app Electron.
 
 Comandi in ingresso (stdin):
-    {"cmd": "config", "language": "it", "model": "small", "device": null}
+    {"cmd": "config", "language": "it", "model": "small", "device": null, "computeDevice": "auto"}
     {"cmd": "start"}
     {"cmd": "stop"}
     {"cmd": "abort"}
@@ -16,13 +16,14 @@ Comandi in ingresso (stdin):
     {"cmd": "shutdown"}
 
 Eventi in uscita (stdout):
-    {"event": "ready"}
+    {"event": "ready", "gpuAvailable": true}
     {"event": "model_loading", "model": "small"}
-    {"event": "model_ready", "model": "small"}
+    {"event": "model_ready", "model": "small", "device": "cpu"}
+    {"event": "gpu_fallback", "message": "..."}
     {"event": "recording_started"}
     {"event": "recording_stopped", "duration": 7.2}
-    {"event": "transcribing", "model": "small"}
-    {"event": "result", "text": "...", "words": 32, "duration": 7.2, "elapsed": 1.1, "language": "it", "model": "small"}
+    {"event": "transcribing", "model": "small", "device": "cpu"}
+    {"event": "result", "text": "...", "words": 32, "duration": 7.2, "elapsed": 1.1, "language": "it", "model": "small", "device": "cpu"}
     {"event": "aborted"}
     {"event": "error", "message": "..."}
     {"event": "devices", "list": [{"index": 0, "name": "Microfono (Realtek Audio)"}]}
@@ -83,6 +84,19 @@ MODEL_ALLOW_PATTERNS = [
 def emit(event: dict):
     sys.stdout.write(json.dumps(event, ensure_ascii=False) + "\n")
     sys.stdout.flush()
+
+
+def detect_gpu() -> bool:
+    """Rileva se ctranslate2 (il motore dietro faster-whisper) vede una GPU
+    CUDA utilizzabile. Puo' dare un falso positivo se manca cuBLAS/cuDNN
+    (che servono solo al momento di caricare davvero il modello): quel caso
+    e' gestito a parte dal fallback in Service.ensure_model()."""
+    try:
+        import ctranslate2
+
+        return ctranslate2.get_cuda_device_count() > 0
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def model_dir(size: str) -> str:
@@ -169,8 +183,10 @@ class Service:
         self.language = "it"
         self.model_size = "small"
         self.device = None
+        self.compute_device = "auto"  # "auto" | "cpu" | "gpu"
         self.model = None
         self.loaded_model_size = None
+        self.loaded_device = None  # device effettivamente usato dal modello caricato
 
         self.recording = False
         self.frames = []
@@ -181,14 +197,36 @@ class Service:
         # o superata da una registrazione successiva) e non emette risultati.
         self.generation = 0
 
+    def _resolve_device(self):
+        """Ritorna (device, compute_type) in base alla preferenza dell'utente."""
+        if self.compute_device == "cpu":
+            return "cpu", "int8"
+        if self.compute_device == "gpu":
+            return "cuda", "float16"
+        # "auto": usa la GPU solo se effettivamente rilevata
+        if detect_gpu():
+            return "cuda", "float16"
+        return "cpu", "int8"
+
     def ensure_model(self):
-        if self.model is None or self.loaded_model_size != self.model_size:
+        resolved_device, compute_type = self._resolve_device()
+        if self.model is None or self.loaded_model_size != self.model_size or self.loaded_device != resolved_device:
             if not download_model_blocking(self.model_size):
                 raise RuntimeError(f"Impossibile scaricare il modello '{self.model_size}'")
             emit({"event": "model_loading", "model": self.model_size})
-            self.model = WhisperModel(model_dir(self.model_size), device="cpu", compute_type="int8")
+            try:
+                self.model = WhisperModel(model_dir(self.model_size), device=resolved_device, compute_type=compute_type)
+                self.loaded_device = resolved_device
+            except Exception as exc:  # noqa: BLE001
+                if resolved_device == "cpu":
+                    raise
+                # GPU rilevata ma non realmente utilizzabile (es. cuBLAS/cuDNN
+                # mancanti): non blocchiamo la trascrizione, torniamo alla CPU.
+                emit({"event": "gpu_fallback", "message": str(exc)})
+                self.model = WhisperModel(model_dir(self.model_size), device="cpu", compute_type="int8")
+                self.loaded_device = "cpu"
             self.loaded_model_size = self.model_size
-            emit({"event": "model_ready", "model": self.model_size})
+            emit({"event": "model_ready", "model": self.model_size, "device": self.loaded_device})
 
     def list_devices(self):
         devices = []
@@ -265,7 +303,8 @@ class Service:
             if gen != self.generation:
                 return
             model_used = self.loaded_model_size
-            emit({"event": "transcribing", "model": model_used})
+            device_used = self.loaded_device
+            emit({"event": "transcribing", "model": model_used, "device": device_used})
             t0 = time.time()
             lang = None if self.language == "auto" else self.language
             segments, info = self.model.transcribe(audio, language=lang)
@@ -281,6 +320,7 @@ class Service:
                 "elapsed": round(elapsed, 2),
                 "language": info.language,
                 "model": model_used,
+                "device": device_used,
             })
         except Exception as exc:  # noqa: BLE001
             if gen == self.generation:
@@ -295,6 +335,8 @@ class Service:
                 self.model_size = msg["model"]
             if "device" in msg:
                 self.device = msg["device"]
+            if "computeDevice" in msg:
+                self.compute_device = msg["computeDevice"]
         elif cmd == "list_devices":
             self.list_devices()
         elif cmd == "list_models":
@@ -330,7 +372,7 @@ class Service:
 
 def main():
     service = Service()
-    emit({"event": "ready"})
+    emit({"event": "ready", "gpuAvailable": detect_gpu()})
     for line in sys.stdin:
         line = line.strip()
         if not line:

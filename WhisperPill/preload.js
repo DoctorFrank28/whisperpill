@@ -14,6 +14,10 @@ contextBridge.exposeInMainWorld("whisperPill", {
   pillHoverLeave: () => ipcRenderer.send("pill:hoverLeave"),
 
   getVersion: () => ipcRenderer.invoke("app:getVersion"),
+  getComputeStatus: () => ipcRenderer.invoke("system:getComputeStatus"),
+  onComputeStatus: (callback) => {
+    ipcRenderer.on("compute:status", (_event, payload) => callback(payload));
+  },
 
   getConfig: () => ipcRenderer.invoke("config:get"),
   setConfig: (patch) => ipcRenderer.invoke("config:set", patch),

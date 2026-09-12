@@ -11,6 +11,7 @@ const defaults = {
   language: "it", // lingua di trascrizione: "it" | "en" | "auto"
   uiLanguage: "auto", // lingua dell'interfaccia: "auto" | "it" | "en"
   modelSize: "small", // tiny | base | small | medium | large-v3
+  computeDevice: "auto", // motore di calcolo: "auto" | "cpu" | "gpu"
   micDevice: null, // null = default device, otherwise sounddevice index
   launchAtStartup: false,
   theme: "auto", // "auto" | "light" | "dark"

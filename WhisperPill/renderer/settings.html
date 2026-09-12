@@ -446,6 +446,18 @@
               <div data-i18n="settings.model.scaleAccurate">PIU' PRECISO, PIU' LENTO →</div>
             </div>
           </div>
+          <div class="field-row" style="margin-top:16px;">
+            <div class="field-label">
+              <div class="field-title" data-i18n="settings.model.computeTitle">Motore di calcolo</div>
+              <div class="field-desc" data-i18n="settings.model.computeDesc">La GPU (NVIDIA) trascrive piu' velocemente, se disponibile</div>
+            </div>
+          </div>
+          <div class="segmented compact" id="compute-device">
+            <div class="seg-pill" data-value="auto" data-i18n="settings.model.computeAuto">Automatico</div>
+            <div class="seg-pill" data-value="cpu" data-i18n="settings.model.computeCpu">CPU</div>
+            <div class="seg-pill" data-value="gpu" data-i18n="settings.model.computeGpu">GPU</div>
+          </div>
+          <div class="field-desc" id="compute-status-note" style="margin-top:6px;"></div>
         </div>
 
         <div class="section" id="section-models">

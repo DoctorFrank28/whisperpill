@@ -23,6 +23,15 @@ let currentState = { kind: "idle" };
 let hideTimer = null;
 let recordingStartedAt = null;
 
+// Stato del motore di calcolo (CPU/GPU) riportato dal backend Python, usato
+// dalle Impostazioni per mostrare se la GPU e' davvero disponibile/in uso.
+let computeStatus = { gpuAvailable: null, lastActualDevice: null, fallbackMessage: null };
+function sendComputeStatus() {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.webContents.send("compute:status", computeStatus);
+  }
+}
+
 // store.store legge solo cio' che e' effettivamente salvato su disco: per le
 // installazioni esistenti create prima dell'aggiunta di un default (es.
 // "shortcut"), la chiave puo' mancare del tutto e risultare `undefined`
@@ -66,6 +75,7 @@ function applySttConfig() {
     language: cfg.language,
     model: cfg.modelSize,
     device: cfg.micDevice,
+    computeDevice: cfg.computeDevice,
   });
 }
 
@@ -324,6 +334,18 @@ sttBridge.on("message", (msg) => {
     case "model_deleted":
       broadcastToManagers("models:deleted", { model: msg.model });
       break;
+    case "ready":
+      computeStatus.gpuAvailable = !!msg.gpuAvailable;
+      sendComputeStatus();
+      break;
+    case "model_ready":
+      computeStatus.lastActualDevice = msg.device || null;
+      sendComputeStatus();
+      break;
+    case "gpu_fallback":
+      computeStatus.fallbackMessage = msg.message || "";
+      sendComputeStatus();
+      break;
     default:
       break;
   }
@@ -543,7 +565,13 @@ ipcMain.handle("config:set", (_e, patch) => {
 
   if (patch.theme) applyThemeSource();
   if ("launchAtStartup" in patch) applyLoginItem();
-  if (patch.language || patch.modelSize || "micDevice" in patch) applySttConfig();
+  if (patch.language || patch.modelSize || "micDevice" in patch || patch.computeDevice) applySttConfig();
+  if (patch.computeDevice) {
+    // Il vecchio esito (riuscito o fallback) non e' piu' valido finche' il
+    // backend non ricarica il modello con la nuova preferenza.
+    computeStatus.fallbackMessage = null;
+    sendComputeStatus();
+  }
   if (patch.activationMode) updateHotkeyReservation();
   if (patch.uiLanguage) broadcastI18n();
 
@@ -553,6 +581,8 @@ ipcMain.handle("config:set", (_e, patch) => {
 ipcMain.handle("i18n:get", () => getI18nPayload());
 
 ipcMain.handle("app:getVersion", () => app.getVersion());
+
+ipcMain.handle("system:getComputeStatus", () => computeStatus);
 
 ipcMain.handle("devices:list", () => {
   sttBridge.listDevices();
