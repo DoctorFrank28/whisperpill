@@ -94,4 +94,4 @@ class SttBridge extends EventEmitter {
   }
 }
 
-module.exports = { SttBridge };
+module.exports = { SttBridge, WHISPER_DIR, PYTHON_EXE, SERVICE_SCRIPT };

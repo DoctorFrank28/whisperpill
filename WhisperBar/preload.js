@@ -23,4 +23,12 @@ contextBridge.exposeInMainWorld("whisperBar", {
 
   minimizeWindow: () => ipcRenderer.send("win:minimize"),
   closeWindow: () => ipcRenderer.send("win:close"),
+
+  onSetupLog: (callback) => {
+    ipcRenderer.on("setup:log", (_event, line) => callback(line));
+  },
+  onSetupDone: (callback) => {
+    ipcRenderer.on("setup:done", (_event, result) => callback(result));
+  },
+  closeSetupWindow: () => ipcRenderer.send("setup:close"),
 });

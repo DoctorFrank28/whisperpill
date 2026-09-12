@@ -1,10 +1,11 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, screen, clipboard, nativeTheme, nativeImage } = require("electron");
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen, clipboard, nativeTheme, nativeImage, dialog } = require("electron");
 const path = require("path");
 const { exec } = require("child_process");
 
 const { store } = require("./config");
 const { SttBridge } = require("./sttBridge");
 const { HotkeyEngine } = require("./hotkeys");
+const { whisperEnvironmentExists, setupScriptExists, runSetup, SETUP_SCRIPT } = require("./setupRunner");
 
 const PILL_WIDTH = 560;
 const PILL_HEIGHT = 340;
@@ -12,6 +13,7 @@ const PILL_BOTTOM_MARGIN = 48;
 
 let pillWindow = null;
 let settingsWindow = null;
+let setupWindow = null;
 let tray = null;
 let hotkeys = null;
 const sttBridge = new SttBridge();
@@ -233,6 +235,74 @@ function updateTrayMenu() {
   tray.setContextMenu(menu);
 }
 
+// ---- ambiente whisper (setup al primo avvio) ----
+
+function openSetupWindow() {
+  setupWindow = new BrowserWindow({
+    width: 560,
+    height: 480,
+    frame: false,
+    resizable: false,
+    show: false,
+    backgroundColor: "#17191D",
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  setupWindow.setMenuBarVisibility(false);
+  setupWindow.loadFile(path.join(__dirname, "renderer", "setup.html"));
+  setupWindow.once("ready-to-show", () => setupWindow.show());
+  if (process.env.WHISPERBAR_DEBUG_CONSOLE) {
+    setupWindow.webContents.on("console-message", (_e, level, message) => console.log("[setup]", level, message));
+  }
+  setupWindow.on("closed", () => {
+    setupWindow = null;
+  });
+  return setupWindow;
+}
+
+async function ensureWhisperEnvironment() {
+  if (whisperEnvironmentExists()) return;
+
+  if (!setupScriptExists()) {
+    dialog.showErrorBox(
+      "Ambiente whisper non trovato",
+      `Non trovo ne' l'ambiente Python ne' lo script di setup in:\n${SETUP_SCRIPT}\n\nReinstalla whisper-ai manualmente prima di usare WhisperBar.`
+    );
+    return;
+  }
+
+  const choice = dialog.showMessageBoxSync({
+    type: "question",
+    title: "WhisperBar",
+    message: "L'ambiente di trascrizione non e' ancora installato.",
+    detail: "Vuoi installarlo ora? Verranno scaricati alcuni pacchetti Python (serve una connessione internet).",
+    buttons: ["Installa ora", "Piu' tardi"],
+    defaultId: 0,
+    cancelId: 1,
+  });
+  if (choice !== 0) return;
+
+  const win = openSetupWindow();
+  const emitter = runSetup();
+  emitter.on("line", (line) => {
+    if (win && !win.isDestroyed()) win.webContents.send("setup:log", line);
+  });
+
+  await new Promise((resolve) => {
+    emitter.on("done", (result) => {
+      if (win && !win.isDestroyed()) win.webContents.send("setup:done", result);
+      resolve(result);
+    });
+  });
+}
+
+ipcMain.on("setup:close", (event) => {
+  BrowserWindow.fromWebContents(event.sender)?.close();
+});
+
 // ---- settings window ----
 
 function openSettingsWindow() {
@@ -329,13 +399,15 @@ ipcMain.on("win:close", (event) => {
 
 // ---- app lifecycle ----
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   applyThemeSource();
   applyLoginItem();
 
   createPillWindow();
   createTray();
   if (process.env.WHISPERBAR_DEBUG_OPEN_SETTINGS) openSettingsWindow();
+
+  await ensureWhisperEnvironment();
 
   sttBridge.start();
   applySttConfig();
