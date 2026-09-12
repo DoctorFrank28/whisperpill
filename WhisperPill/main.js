@@ -2,7 +2,7 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, screen, clipboard, nativeTheme,
 const path = require("path");
 const { exec } = require("child_process");
 
-const { store } = require("./config");
+const { store, defaults } = require("./config");
 const { SttBridge, MODEL_SIZES, anyModelDownloaded } = require("./sttBridge");
 const { HotkeyEngine } = require("./hotkeys");
 const { whisperEnvironmentExists, setupScriptExists, runSetup, SETUP_SCRIPT } = require("./setupRunner");
@@ -23,8 +23,17 @@ let currentState = { kind: "idle" };
 let hideTimer = null;
 let recordingStartedAt = null;
 
+// store.store legge solo cio' che e' effettivamente salvato su disco: per le
+// installazioni esistenti create prima dell'aggiunta di un default (es.
+// "shortcut"), la chiave puo' mancare del tutto e risultare `undefined`
+// invece di ricadere sul default - qui si applica la fusione esplicita.
 function getConfig() {
-  return store.store;
+  const saved = store.store;
+  return {
+    ...defaults,
+    ...saved,
+    outputs: { ...defaults.outputs, ...(saved.outputs || {}) },
+  };
 }
 
 // Lingua dell'INTERFACCIA (menu, impostazioni) - indipendente dalla lingua di
