@@ -164,7 +164,18 @@ ipcMain.on("pill:hoverLeave", () => {
 
 // ---- recording / transcription flow ----
 
+// Molti si fermano un attimo prima di aver davvero finito di parlare: un
+// piccolo margine dopo il rilascio del tasto evita di tagliare l'ultima
+// parola. Se si ripreme subito, la registrazione prosegue senza interruzioni.
+const STOP_DELAY_MS = 450;
+let stopDelayTimer = null;
+
 function beginListening() {
+  if (stopDelayTimer) {
+    clearTimeout(stopDelayTimer);
+    stopDelayTimer = null;
+    return;
+  }
   clearHideTimer();
   recordingStartedAt = Date.now();
   showPill();
@@ -173,8 +184,12 @@ function beginListening() {
 }
 
 function endListening() {
-  sendPillState({ kind: "processing" });
-  sttBridge.stopRecording();
+  clearTimeout(stopDelayTimer);
+  stopDelayTimer = setTimeout(() => {
+    stopDelayTimer = null;
+    sendPillState({ kind: "processing" });
+    sttBridge.stopRecording();
+  }, STOP_DELAY_MS);
 }
 
 function activationHintText() {
