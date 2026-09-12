@@ -65,13 +65,15 @@ function render(state) {
     }
 
     case "processing":
+      document.getElementById("processing-meta").textContent = state.model || "";
       showCard(cards.processing);
       break;
 
     case "result": {
       lastResult = state;
       if (state.expanded) {
-        document.getElementById("expanded-title").textContent = `TRASCRIZIONE · ${state.words || 0} PAROLE`;
+        const modelLabel = state.model ? ` · ${state.model.toUpperCase()}` : "";
+        document.getElementById("expanded-title").textContent = `TRASCRIZIONE · ${state.words || 0} PAROLE${modelLabel}`;
         document.getElementById("expanded-text").textContent = state.text;
         document.getElementById("expanded-hint").innerHTML = hintsMarkup(state, true);
         showCard(cards.resultExpanded);
@@ -103,10 +105,12 @@ function hintsMarkup(state, expanded, standalone) {
   if (state.copied) parts.push(`<span class="ok">✓ copiato</span>`);
   if (state.typed) parts.push(`<span class="ok">✓ digitato</span>`);
   if (!standalone && state.words != null) {
-    parts.push(`<span>${state.words} parole${state.elapsed != null ? ` · ${state.elapsed}s` : ""}</span>`);
+    const model = state.model ? ` · ${state.model}` : "";
+    const elapsed = state.elapsed != null ? ` · ${state.elapsed}s` : "";
+    parts.push(`<span>${state.words} parole${model}${elapsed}</span>`);
   }
   if (standalone && !parts.length) parts.push(`<span>Fatto</span>`);
-  return parts.join("");
+  return parts.join(" · ");
 }
 
 window.whisperBar.onState(render);

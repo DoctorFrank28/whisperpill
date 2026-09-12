@@ -21,8 +21,8 @@ Eventi in uscita (stdout):
     {"event": "model_ready", "model": "small"}
     {"event": "recording_started"}
     {"event": "recording_stopped", "duration": 7.2}
-    {"event": "transcribing"}
-    {"event": "result", "text": "...", "words": 32, "duration": 7.2, "elapsed": 1.1, "language": "it"}
+    {"event": "transcribing", "model": "small"}
+    {"event": "result", "text": "...", "words": 32, "duration": 7.2, "elapsed": 1.1, "language": "it", "model": "small"}
     {"event": "aborted"}
     {"event": "error", "message": "..."}
     {"event": "devices", "list": [{"index": 0, "name": "Microfono (Realtek Audio)"}]}
@@ -264,7 +264,8 @@ class Service:
             self.ensure_model()
             if gen != self.generation:
                 return
-            emit({"event": "transcribing"})
+            model_used = self.loaded_model_size
+            emit({"event": "transcribing", "model": model_used})
             t0 = time.time()
             lang = None if self.language == "auto" else self.language
             segments, info = self.model.transcribe(audio, language=lang)
@@ -279,6 +280,7 @@ class Service:
                 "duration": round(duration, 2),
                 "elapsed": round(elapsed, 2),
                 "language": info.language,
+                "model": model_used,
             })
         except Exception as exc:  # noqa: BLE001
             if gen == self.generation:

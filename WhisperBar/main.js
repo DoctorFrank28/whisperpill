@@ -187,7 +187,7 @@ function endListening() {
   clearTimeout(stopDelayTimer);
   stopDelayTimer = setTimeout(() => {
     stopDelayTimer = null;
-    sendPillState({ kind: "processing" });
+    sendPillState({ kind: "processing", model: getConfig().modelSize });
     sttBridge.stopRecording();
   }, STOP_DELAY_MS);
 }
@@ -216,7 +216,7 @@ sttBridge.on("message", (msg) => {
     case "recording_stopped":
       break;
     case "transcribing":
-      sendPillState({ kind: "processing" });
+      sendPillState({ kind: "processing", model: msg.model });
       break;
     case "result": {
       const text = (msg.text || "").trim();
@@ -240,6 +240,7 @@ sttBridge.on("message", (msg) => {
           words: msg.words,
           duration: msg.duration,
           elapsed: msg.elapsed,
+          model: msg.model,
           expanded: false,
           copied: didClipboard,
           typed: didAutotype,

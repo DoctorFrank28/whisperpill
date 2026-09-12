@@ -248,9 +248,10 @@
     flex-shrink: 0;
   }
   .result-hints {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     font-family: "IBM Plex Mono", monospace;
     font-size: 10.5px;
     color: var(--text-tertiary);
@@ -345,7 +346,7 @@
       <div class="row">
         <div class="spinner"></div>
         <div class="processing-label">Trascrizione in corso…</div>
-        <div class="processing-meta">faster-whisper</div>
+        <div class="processing-meta" id="processing-meta"></div>
         <button class="icon-btn btn-abort" title="Annulla"><span class="icon-x"></span></button>
       </div>
     </div>
