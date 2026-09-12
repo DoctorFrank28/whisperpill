@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="theme.css" />
+<style>
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  #stage {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .pill-card {
+    width: 452px;
+    border-radius: 16px;
+    background: var(--bg-pill);
+    box-shadow: var(--shadow-pill);
+    animation: pill-in 0.16s ease-out;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .pill-card.visible {
+    display: flex;
+  }
+
+  /* ---- listening ---- */
+  #pill-listening .row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+  }
+  .mic-wrap {
+    position: relative;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .mic-wrap::before {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: var(--danger-soft);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .mic-body {
+    width: 9px;
+    height: 14px;
+    border-radius: 5px;
+    background: var(--danger);
+  }
+  .mic-stand {
+    position: absolute;
+    bottom: 3px;
+    width: 11px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--danger);
+  }
+  .mic-base {
+    position: absolute;
+    bottom: 5px;
+    width: 2px;
+    height: 3px;
+    background: var(--danger);
+  }
+  .wave {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 28px;
+    flex: 1;
+  }
+  .wave span {
+    width: 3px;
+    height: 28px;
+    border-radius: 2px;
+    background: var(--accent);
+    animation: wv 1s ease-in-out infinite;
+  }
+  .timer {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 14px;
+    color: var(--text-primary);
+    flex-shrink: 0;
+  }
+  .hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: "IBM Plex Mono", monospace;
+    padding-bottom: 12px;
+  }
+
+  /* ---- processing ---- */
+  #pill-processing .row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+  }
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-soft);
+    border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  .processing-label {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  .processing-meta {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  /* ---- result ---- */
+  #pill-result {
+    padding: 14px 16px 14px 20px;
+    gap: 10px;
+  }
+  .result-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .result-preview {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+  .icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--control-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    color: var(--text-secondary);
+  }
+  .icon-btn:hover {
+    background: var(--control-bg-hover);
+  }
+  .result-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .result-hints {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-left: 18px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.03em;
+  }
+  .result-hints .ok {
+    color: var(--accent);
+  }
+
+  .result-expanded-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px 13px 20px;
+  }
+  .result-expanded-title {
+    flex: 1;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+  }
+  .divider {
+    height: 1px;
+    background: var(--border-soft);
+  }
+  .result-body {
+    padding: 14px 20px;
+    max-height: 128px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.62;
+    color: var(--text-primary);
+  }
+  .result-expanded-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 12px;
+    height: 30px;
+    border-radius: 9px;
+    font-size: 12.5px;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-weight: 600;
+  }
+  .btn-ghost {
+    background: var(--control-bg);
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  /* ---- error / flash ---- */
+  #pill-error .row,
+  #pill-flash .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    font-size: 13.5px;
+    color: var(--text-primary);
+  }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div class="pill-card" id="pill-listening">
+      <div class="row">
+        <div class="mic-wrap">
+          <div class="mic-body"></div>
+          <div class="mic-stand"></div>
+          <div class="mic-base"></div>
+        </div>
+        <div class="wave" id="wave"></div>
+        <div class="timer" id="timer">0:00</div>
+      </div>
+      <div class="hint" id="listening-hint"></div>
+    </div>
+
+    <div class="pill-card" id="pill-processing">
+      <div class="row">
+        <div class="spinner"></div>
+        <div class="processing-label">Trascrizione in corso…</div>
+        <div class="processing-meta">faster-whisper</div>
+      </div>
+    </div>
+
+    <div class="pill-card" id="pill-result-collapsed">
+      <div class="result-top">
+        <div class="dot"></div>
+        <div class="result-preview" id="result-preview" title="Espandi"></div>
+        <div class="result-actions">
+          <button class="icon-btn" id="btn-copy" title="Copia">⧉</button>
+          <button class="icon-btn" id="btn-expand" title="Espandi">⌄</button>
+        </div>
+      </div>
+      <div class="result-hints" id="result-hints"></div>
+    </div>
+
+    <div class="pill-card" id="pill-result-expanded">
+      <div class="result-expanded-head">
+        <div class="dot"></div>
+        <div class="result-expanded-title" id="expanded-title">TRASCRIZIONE</div>
+        <button class="icon-btn" id="btn-collapse" title="Comprimi">⌃</button>
+      </div>
+      <div class="divider"></div>
+      <div class="result-body" id="expanded-text"></div>
+      <div class="divider"></div>
+      <div class="result-expanded-footer">
+        <div class="result-hints" id="expanded-hint" style="flex:1;padding-left:0;"></div>
+        <button class="btn btn-primary" id="btn-copy-2">Copia</button>
+        <button class="btn btn-ghost" id="btn-close">Chiudi</button>
+      </div>
+    </div>
+
+    <div class="pill-card" id="pill-error">
+      <div class="row" id="error-text"></div>
+    </div>
+
+    <div class="pill-card" id="pill-flash">
+      <div class="row" id="flash-text"></div>
+    </div>
+  </div>
+
+  <script src="pill.js"></script>
+</body>
+</html>

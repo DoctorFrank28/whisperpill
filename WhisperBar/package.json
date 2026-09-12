@@ -1,0 +1,55 @@
+{
+  "name": "whisperbar",
+  "version": "0.1.0",
+  "description": "Pillola flottante per trascrizione vocale con faster-whisper",
+  "author": "Francesco",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "uiohook-napi": "^1.5.4"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.francesco.whisperbar",
+    "productName": "WhisperBar",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "config.js",
+      "hotkeys.js",
+      "sttBridge.js",
+      "renderer/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "WhisperBar"
+    },
+    "portable": {
+      "artifactName": "WhisperBar-${version}-portable.exe"
+    }
+  }
+}

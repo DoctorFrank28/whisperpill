@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="theme.css" />
+<title>WhisperBar — Impostazioni</title>
+<style>
+  html, body {
+    height: 100%;
+    background: var(--bg-pill);
+  }
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  /* ---- title bar ---- */
+  #titlebar {
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding-left: 16px;
+    background: var(--bg-surface-2);
+    border-bottom: 1px solid var(--border-soft);
+    -webkit-app-region: drag;
+  }
+  #titlebar .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+  #titlebar .brand .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 5px;
+    background: var(--accent);
+  }
+  #titlebar .brand .name {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  #titlebar .win-controls {
+    display: flex;
+    height: 44px;
+    -webkit-app-region: no-drag;
+  }
+  #titlebar .win-controls button {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary-2);
+  }
+  #titlebar .win-controls button:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  #titlebar .win-controls button.close:hover {
+    background: #c4372b;
+    color: #fff;
+  }
+
+  /* ---- layout ---- */
+  #body {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+  }
+  #sidebar {
+    width: 196px;
+    flex-shrink: 0;
+    padding: 14px 10px;
+    background: var(--bg-surface-3);
+    border-right: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .nav-item {
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--text-secondary-2);
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .nav-item.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 500;
+  }
+  #sidebar .footer {
+    margin-top: auto;
+    padding: 10px 12px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    color: var(--text-tertiary);
+    line-height: 1.6;
+  }
+
+  #content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 26px 30px 34px;
+  }
+  .section {
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .section.active {
+    display: flex;
+  }
+  .section h2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .field-label {
+    flex: 1;
+  }
+  .field-title {
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+  .field-desc {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    margin-top: 3px;
+  }
+
+  /* toggle switch */
+  .switch {
+    width: 38px;
+    height: 22px;
+    border-radius: 11px;
+    padding: 2px;
+    display: flex;
+    background: var(--control-bg);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .switch .knob {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--text-secondary-2);
+    transition: transform 0.15s ease;
+  }
+  .switch.on {
+    background: var(--accent);
+    justify-content: flex-end;
+  }
+  .switch.on .knob {
+    background: var(--accent-contrast);
+  }
+
+  /* key chips */
+  .key-chip {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--bg-surface-2);
+    box-shadow: 0 0 0 1px var(--border-softer);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--text-primary);
+  }
+  .key-plus {
+    color: var(--text-tertiary);
+    font-size: 11px;
+  }
+  .rebind-btn {
+    margin-left: 6px;
+    padding: 6px 11px;
+    border-radius: 8px;
+    background: var(--control-bg);
+    color: var(--text-primary);
+    font-size: 12px;
+    border: none;
+    cursor: pointer;
+  }
+  .rebind-btn:hover {
+    background: var(--control-bg-hover);
+  }
+  .rebind-btn.capturing {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  /* segmented control */
+  .segmented {
+    display: flex;
+    gap: 8px;
+  }
+  .segmented.compact {
+    gap: 6px;
+    padding: 4px;
+    border-radius: 11px;
+    background: var(--bg-surface-3);
+    box-shadow: 0 0 0 1px var(--border-soft);
+  }
+  .seg-card {
+    flex: 1;
+    padding: 11px 13px;
+    border-radius: 10px;
+    background: var(--bg-surface-2);
+    box-shadow: 0 0 0 1px var(--border-softer);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: pointer;
+  }
+  .seg-card .title {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .seg-card .sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .seg-card.selected {
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  .seg-pill {
+    flex: 1;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12.5px;
+    color: var(--text-secondary-2);
+    cursor: pointer;
+  }
+  .seg-pill.selected {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-weight: 600;
+  }
+  .seg-pill.pill-small { height: 28px; padding: 0 16px; flex: none; }
+
+  .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.03em;
+  }
+
+  select.dropdown {
+    width: 252px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--bg-surface-2);
+    box-shadow: 0 0 0 1px var(--border-softer);
+    color: var(--text-primary);
+    font-size: 12.5px;
+    padding: 0 12px;
+    border: none;
+    appearance: none;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border-soft);
+  }
+</style>
+</head>
+<body>
+  <div id="app">
+    <div id="titlebar">
+      <div class="brand">
+        <div class="dot"></div>
+        <div class="name">WhisperBar — Impostazioni</div>
+      </div>
+      <div class="win-controls">
+        <button id="win-min" title="Riduci">–</button>
+        <button id="win-close" class="close" title="Chiudi">✕</button>
+      </div>
+    </div>
+
+    <div id="body">
+      <div id="sidebar">
+        <div class="nav-item active" data-section="shortcuts">Scorciatoie</div>
+        <div class="nav-item" data-section="output">Output testo</div>
+        <div class="nav-item" data-section="model">Lingua e modello</div>
+        <div class="nav-item" data-section="mic">Microfono</div>
+        <div class="nav-item" data-section="startup">Avvio</div>
+        <div class="nav-item" data-section="appearance">Aspetto</div>
+        <div class="footer">WhisperBar v0.1<br />faster-whisper</div>
+      </div>
+
+      <div id="content">
+        <div class="section active" id="section-shortcuts">
+          <h2>Scorciatoie</h2>
+          <div class="field-row">
+            <div class="field-label">
+              <div class="field-title">Scorciatoia di registrazione</div>
+              <div class="field-desc">Clicca "Riassegna", poi premi la nuova combinazione</div>
+            </div>
+            <div style="display:flex; align-items:center;" id="shortcut-chips"></div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:9px; margin-top:8px;">
+            <div class="field-title">Modalita' di attivazione</div>
+            <div class="segmented" id="activation-mode">
+              <div class="seg-card" data-value="hold">
+                <div class="title">Tieni premuto</div>
+                <div class="sub">Push-to-talk</div>
+              </div>
+              <div class="seg-card" data-value="toggle">
+                <div class="title">Tocca</div>
+                <div class="sub">Avvia / ferma</div>
+              </div>
+              <div class="seg-card" data-value="trayOnly">
+                <div class="title">Solo icona tray</div>
+                <div class="sub">Click sull'icona</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section" id="section-output">
+          <h2>Output testo</h2>
+          <div class="field-row">
+            <div class="field-label">
+              <div class="field-title">Copia negli appunti</div>
+              <div class="field-desc">Il testo resta disponibile per Ctrl+V</div>
+            </div>
+            <div class="switch" data-toggle="outputs.clipboard"><div class="knob"></div></div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">
+              <div class="field-title">Digita nella finestra attiva</div>
+              <div class="field-desc">Auto-type: incolla automaticamente dove stai scrivendo</div>
+            </div>
+            <div class="switch" data-toggle="outputs.autotype"><div class="knob"></div></div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">
+              <div class="field-title">Mostra nella barra</div>
+              <div class="field-desc">Sezione collassabile con il testo completo</div>
+            </div>
+            <div class="switch" data-toggle="outputs.showInBar"><div class="knob"></div></div>
+          </div>
+        </div>
+
+        <div class="section" id="section-model">
+          <h2>Lingua e modello</h2>
+          <div class="field-row">
+            <div class="field-title" style="flex:1;">Lingua di trascrizione</div>
+            <select class="dropdown" id="language-select">
+              <option value="it">Italiano</option>
+              <option value="en">Inglese</option>
+              <option value="auto">Rilevamento automatico</option>
+            </select>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:baseline; gap:10px;">
+              <div class="field-title">Dimensione modello</div>
+              <div class="mono" style="font-size:11px; color:var(--text-secondary);">piu' grande = piu' lento, piu' preciso</div>
+            </div>
+            <div class="segmented compact" id="model-size">
+              <div class="seg-pill" data-value="tiny">tiny</div>
+              <div class="seg-pill" data-value="base">base</div>
+              <div class="seg-pill" data-value="small">small</div>
+              <div class="seg-pill" data-value="medium">medium</div>
+              <div class="seg-pill" data-value="large-v3">large</div>
+            </div>
+            <div class="scale-labels">
+              <div>&larr; PIU' VELOCE, MENO PRECISO</div>
+              <div>PIU' PRECISO, PIU' LENTO &rarr;</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section" id="section-mic">
+          <h2>Microfono</h2>
+          <div class="field-row">
+            <div class="field-label">
+              <div class="field-title">Dispositivo di input</div>
+              <div class="field-desc">Lascia "Predefinito" per usare il microfono di sistema</div>
+            </div>
+            <select class="dropdown" id="mic-select">
+              <option value="">Predefinito</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section" id="section-startup">
+          <h2>Avvio</h2>
+          <div class="field-row">
+            <div class="field-label">
+              <div class="field-title">Avvia con Windows</div>
+              <div class="field-desc">WhisperBar resta in background nella system tray</div>
+            </div>
+            <div class="switch" data-toggle="launchAtStartup"><div class="knob"></div></div>
+          </div>
+        </div>
+
+        <div class="section" id="section-appearance">
+          <h2>Aspetto</h2>
+          <div class="field-row">
+            <div class="field-label">
+              <div class="field-title">Tema</div>
+              <div class="field-desc">Auto segue il tema di sistema</div>
+            </div>
+            <div class="segmented compact" id="theme-select" style="width:auto;">
+              <div class="seg-pill pill-small" data-value="auto">Auto</div>
+              <div class="seg-pill pill-small" data-value="light">Light</div>
+              <div class="seg-pill pill-small" data-value="dark">Dark</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

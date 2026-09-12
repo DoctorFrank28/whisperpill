@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+
+WhisperBar/node_modules/
+WhisperBar/dist/

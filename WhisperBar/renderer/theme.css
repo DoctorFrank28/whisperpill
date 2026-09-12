@@ -1,0 +1,102 @@
+:root {
+  --bg-pill: #17191d;
+  --bg-app: #141619;
+  --bg-surface-2: #1c1f24;
+  --bg-surface-3: #141619;
+  --text-primary: #edeef0;
+  --text-secondary: #8a8f98;
+  --text-secondary-2: #9a9fa8;
+  --text-tertiary: #7e848d;
+  --accent: #63c7d6;
+  --accent-contrast: #0e1416;
+  --accent-soft: rgba(99, 199, 214, 0.14);
+  --danger: #eb5c4a;
+  --danger-soft: rgba(235, 92, 74, 0.16);
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --border-softer: rgba(255, 255, 255, 0.09);
+  --control-bg: rgba(255, 255, 255, 0.07);
+  --control-bg-hover: rgba(255, 255, 255, 0.12);
+  --shadow-pill: 0 1px 0 0 rgba(255, 255, 255, 0.07) inset,
+    0 18px 44px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-window: 0 30px 70px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-pill: #fbfbfa;
+    --bg-app: #eeece6;
+    --bg-surface-2: #f2f0ea;
+    --bg-surface-3: #e7e4de;
+    --text-primary: #1a1c1f;
+    --text-secondary: #5c6268;
+    --text-secondary-2: #6b7076;
+    --text-tertiary: #7a7f86;
+    --accent: #17808f;
+    --accent-contrast: #f5fbfc;
+    --accent-soft: rgba(23, 128, 143, 0.12);
+    --danger: #cb3e2a;
+    --danger-soft: rgba(203, 62, 42, 0.13);
+    --border-soft: rgba(24, 26, 30, 0.07);
+    --border-softer: rgba(24, 26, 30, 0.09);
+    --control-bg: rgba(24, 26, 30, 0.06);
+    --control-bg-hover: rgba(24, 26, 30, 0.1);
+    --shadow-pill: 0 14px 34px -10px rgba(24, 26, 30, 0.28), 0 0 0 1px rgba(24, 26, 30, 0.08);
+    --shadow-window: 0 30px 70px -20px rgba(24, 26, 30, 0.35), 0 0 0 1px rgba(24, 26, 30, 0.1);
+    color-scheme: light;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: var(--text-primary);
+}
+
+.mono {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+@keyframes wv {
+  0%,
+  100% {
+    transform: scaleY(0.22);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.78);
+  }
+}
+
+@keyframes pill-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
