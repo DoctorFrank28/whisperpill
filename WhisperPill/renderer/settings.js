@@ -37,9 +37,16 @@ async function init() {
 
 let computeStatus = { gpuAvailable: null, lastActualDevice: null, fallbackMessage: null };
 
+let gpuInstallRunning = false;
+let computeChecking = false;
+
 function renderComputeStatus() {
   const el = byId("compute-status-note");
   const installRow = byId("gpu-install-row");
+  const checkBtn = byId("compute-check-btn");
+  checkBtn.disabled = computeChecking || gpuInstallRunning;
+  checkBtn.textContent = computeChecking ? t("settings.model.computeChecking") : t("settings.model.computeCheckBtn");
+
   if (!computeStatus) {
     el.textContent = "";
     installRow.style.display = "none";
@@ -68,14 +75,21 @@ function renderComputeStatus() {
 
 window.whisperPill.onComputeStatus((status) => {
   computeStatus = status;
+  computeChecking = false;
   renderComputeStatus();
 });
 
-let gpuInstallRunning = false;
+byId("compute-check-btn").addEventListener("click", () => {
+  if (computeChecking || gpuInstallRunning) return;
+  computeChecking = true;
+  renderComputeStatus();
+  window.whisperPill.checkCompute();
+});
 
 byId("gpu-install-btn").addEventListener("click", () => {
   if (gpuInstallRunning) return;
   gpuInstallRunning = true;
+  renderComputeStatus();
   const btn = byId("gpu-install-btn");
   btn.disabled = true;
   btn.textContent = t("settings.model.computeInstalling");
@@ -93,6 +107,7 @@ window.whisperPill.onGpuInstallLog((line) => {
 
 window.whisperPill.onGpuInstallDone((result) => {
   gpuInstallRunning = false;
+  renderComputeStatus();
   const btn = byId("gpu-install-btn");
   btn.disabled = false;
   btn.textContent = t("settings.model.computeInstallBtn");

@@ -604,6 +604,13 @@ ipcMain.on("gpu:installLibs", (event) => {
   });
 });
 
+// Verifica esplicita (pulsante "Verifica" in Impostazioni): forza subito un
+// tentativo di caricamento con la preferenza attuale, cosi' l'utente vede lo
+// stato reale senza dover prima dettare qualcosa.
+ipcMain.on("compute:check", () => {
+  sttBridge.reloadModel();
+});
+
 ipcMain.handle("devices:list", () => {
   sttBridge.listDevices();
   return true;

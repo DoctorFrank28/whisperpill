@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld("whisperPill", {
   onComputeStatus: (callback) => {
     ipcRenderer.on("compute:status", (_event, payload) => callback(payload));
   },
+  checkCompute: () => ipcRenderer.send("compute:check"),
   installGpuLibs: () => ipcRenderer.send("gpu:installLibs"),
   onGpuInstallLog: (callback) => {
     ipcRenderer.on("gpu:installLog", (_event, line) => callback(line));

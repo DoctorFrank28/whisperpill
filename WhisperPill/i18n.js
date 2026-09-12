@@ -77,6 +77,8 @@ const IT = {
   "settings.model.computeInstallBtn": "Installa librerie GPU",
   "settings.model.computeInstalling": "Installazione in corso…",
   "settings.model.computeInstallFailed": "Installazione non riuscita. Controlla la connessione e riprova.",
+  "settings.model.computeCheckBtn": "Verifica",
+  "settings.model.computeChecking": "Verifica…",
 
   "settings.models.title": "Modelli",
   "settings.models.desc": "Scarica o rimuovi i modelli Whisper. Vengono salvati in {path}.",
@@ -210,6 +212,8 @@ const EN = {
   "settings.model.computeInstallBtn": "Install GPU libraries",
   "settings.model.computeInstalling": "Installing…",
   "settings.model.computeInstallFailed": "Installation failed. Check your connection and try again.",
+  "settings.model.computeCheckBtn": "Check",
+  "settings.model.computeChecking": "Checking…",
 
   "settings.models.title": "Models",
   "settings.models.desc": "Download or remove Whisper models. They're saved in {path}.",
