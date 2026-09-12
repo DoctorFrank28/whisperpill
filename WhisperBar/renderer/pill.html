@@ -181,6 +181,58 @@
   .icon-btn:hover {
     background: var(--control-bg-hover);
   }
+  .icon-btn {
+    position: relative;
+  }
+  .icon-copy-back,
+  .icon-copy-front {
+    position: absolute;
+    width: 9px;
+    height: 11px;
+    border-radius: 2px;
+  }
+  .icon-copy-back {
+    box-shadow: 0 0 0 1.4px currentColor;
+    transform: translate(2px, -2px);
+  }
+  .icon-copy-front {
+    background: var(--bg-pill);
+    box-shadow: 0 0 0 1.4px currentColor;
+    transform: translate(-2px, 2px);
+  }
+  .icon-chevron {
+    width: 7px;
+    height: 7px;
+    border-right: 1.6px solid currentColor;
+    border-bottom: 1.6px solid currentColor;
+  }
+  .icon-chevron.down {
+    transform: rotate(45deg) translate(-1px, -1px);
+  }
+  .icon-chevron.up {
+    transform: rotate(-135deg) translate(-1px, -1px);
+  }
+  .icon-x {
+    position: relative;
+    width: 11px;
+    height: 11px;
+  }
+  .icon-x::before,
+  .icon-x::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 0;
+    width: 11px;
+    height: 1.6px;
+    background: currentColor;
+  }
+  .icon-x::before {
+    transform: rotate(45deg);
+  }
+  .icon-x::after {
+    transform: rotate(-45deg);
+  }
   .result-actions {
     display: flex;
     align-items: center;
@@ -294,8 +346,8 @@
         <div class="dot"></div>
         <div class="result-preview" id="result-preview" title="Espandi"></div>
         <div class="result-actions">
-          <button class="icon-btn" id="btn-copy" title="Copia">⧉</button>
-          <button class="icon-btn" id="btn-expand" title="Espandi">⌄</button>
+          <button class="icon-btn" id="btn-copy" title="Copia"><span class="icon-copy-back"></span><span class="icon-copy-front"></span></button>
+          <button class="icon-btn" id="btn-expand" title="Espandi"><span class="icon-chevron down"></span></button>
         </div>
       </div>
       <div class="result-hints" id="result-hints"></div>
@@ -305,7 +357,7 @@
       <div class="result-expanded-head">
         <div class="dot"></div>
         <div class="result-expanded-title" id="expanded-title">TRASCRIZIONE</div>
-        <button class="icon-btn" id="btn-collapse" title="Comprimi">⌃</button>
+        <button class="icon-btn" id="btn-collapse" title="Comprimi"><span class="icon-chevron up"></span></button>
       </div>
       <div class="divider"></div>
       <div class="result-body" id="expanded-text"></div>

@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld("whisperBar", {
   requestCollapse: () => ipcRenderer.send("pill:collapse"),
   copyText: (text) => ipcRenderer.send("pill:copy", text),
   setIgnoreMouseEvents: (ignore) => ipcRenderer.send("pill:setIgnoreMouseEvents", ignore),
+  pillHoverEnter: () => ipcRenderer.send("pill:hoverEnter"),
+  pillHoverLeave: () => ipcRenderer.send("pill:hoverLeave"),
 
   getConfig: () => ipcRenderer.invoke("config:get"),
   setConfig: (patch) => ipcRenderer.invoke("config:set", patch),

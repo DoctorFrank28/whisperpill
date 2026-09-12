@@ -124,8 +124,16 @@ document.getElementById("btn-close").addEventListener("click", () => window.whis
 
 // Il BrowserWindow copre un'area trasparente piu' grande della pillola visibile:
 // ignoriamo i click fuori dalla card cosi' i clic raggiungono le finestre sottostanti.
+// Mentre il mouse e' sopra la card, mettiamo in pausa la sparizione automatica
+// (altrimenti la pillola col risultato rischia di chiudersi mentre la si legge).
+let wasOverCard = false;
 document.addEventListener("mousemove", (e) => {
   const el = document.elementFromPoint(e.clientX, e.clientY);
-  const overCard = el && el.closest(".pill-card");
+  const overCard = !!(el && el.closest(".pill-card"));
   window.whisperBar.setIgnoreMouseEvents(!overCard);
+  if (overCard !== wasOverCard) {
+    wasOverCard = overCard;
+    if (overCard) window.whisperBar.pillHoverEnter();
+    else window.whisperBar.pillHoverLeave();
+  }
 });

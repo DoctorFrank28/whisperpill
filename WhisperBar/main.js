@@ -136,10 +136,31 @@ function clearHideTimer() {
   }
 }
 
+let hoverPaused = false;
+let pendingHideMs = null;
+
 function scheduleAutoHide(ms) {
+  pendingHideMs = ms;
   clearHideTimer();
+  if (hoverPaused) return;
   hideTimer = setTimeout(() => hidePill(), ms);
 }
+
+// Mentre il mouse e' sopra la pillola, il countdown resta in pausa: altrimenti
+// il risultato rischia di sparire proprio mentre lo si sta leggendo o copiando.
+ipcMain.on("pill:hoverEnter", () => {
+  hoverPaused = true;
+  clearHideTimer();
+});
+
+ipcMain.on("pill:hoverLeave", () => {
+  hoverPaused = false;
+  const kind = currentState.kind;
+  const eligible = kind === "error" || kind === "flash" || (kind === "result" && !currentState.expanded);
+  if (eligible && pendingHideMs != null) {
+    scheduleAutoHide(pendingHideMs);
+  }
+});
 
 // ---- recording / transcription flow ----
 
@@ -175,7 +196,7 @@ sttBridge.on("message", (msg) => {
       const text = (msg.text || "").trim();
       if (!text) {
         sendPillState({ kind: "error", message: "Nessun testo riconosciuto." });
-        scheduleAutoHide(2200);
+        scheduleAutoHide(3000);
         break;
       }
       const didClipboard = !!cfg.outputs.clipboard;
@@ -197,10 +218,10 @@ sttBridge.on("message", (msg) => {
           copied: didClipboard,
           typed: didAutotype,
         });
-        scheduleAutoHide(6000);
+        scheduleAutoHide(9000);
       } else {
         sendPillState({ kind: "flash", copied: didClipboard, typed: didAutotype });
-        scheduleAutoHide(1200);
+        scheduleAutoHide(1800);
       }
       break;
     }
@@ -434,7 +455,7 @@ ipcMain.on("pill:expand", () => {
 ipcMain.on("pill:collapse", () => {
   if (currentState.kind === "result") {
     sendPillState({ ...currentState, expanded: false });
-    scheduleAutoHide(4000);
+    scheduleAutoHide(6000);
   }
 });
 

@@ -70,6 +70,27 @@
     background: #c4372b;
     color: #fff;
   }
+  .icon-x {
+    position: relative;
+    width: 11px;
+    height: 11px;
+  }
+  .icon-x::before,
+  .icon-x::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 0;
+    width: 11px;
+    height: 1.6px;
+    background: currentColor;
+  }
+  .icon-x::before {
+    transform: rotate(45deg);
+  }
+  .icon-x::after {
+    transform: rotate(-45deg);
+  }
 
   /* ---- layout ---- */
   #body {
@@ -327,7 +348,7 @@
       </div>
       <div class="win-controls">
         <button id="win-min" title="Riduci">–</button>
-        <button id="win-close" class="close" title="Chiudi">✕</button>
+        <button id="win-close" class="close" title="Chiudi"><span class="icon-x"></span></button>
       </div>
     </div>
 
