@@ -22,118 +22,19 @@ async function init() {
   renderSegPills("model-size", config.modelSize);
   renderSegPills("theme-select", config.theme);
   renderSegPills("ui-language-select", config.uiLanguage);
-  renderSegPills("compute-device", config.computeDevice);
   byId("models-desc").innerHTML = t("settings.models.desc", { path: '<span class="mono">whisper-ai/models</span>' });
 
   const version = await window.whisperPill.getVersion();
   byId("app-footer").innerHTML = `WhisperPill v${version}<br />faster-whisper`;
 
-  computeStatus = await window.whisperPill.getComputeStatus();
-  renderComputeStatus();
-
   window.whisperPill.listDevices();
   window.whisperPill.listModels();
 }
-
-let computeStatus = { gpuAvailable: null, lastActualDevice: null, fallbackMessage: null };
-
-let gpuInstallRunning = false;
-let computeChecking = false;
-
-function renderComputeStatus() {
-  const el = byId("compute-status-note");
-  const installRow = byId("gpu-install-row");
-  const checkBtn = byId("compute-check-btn");
-  checkBtn.disabled = computeChecking || gpuInstallRunning;
-  checkBtn.textContent = computeChecking ? t("settings.model.computeChecking") : t("settings.model.computeCheckBtn");
-
-  if (!computeStatus) {
-    el.textContent = "";
-    installRow.style.display = "none";
-    return;
-  }
-  if (computeStatus.fallbackMessage) {
-    el.textContent = t("settings.model.computeFallback");
-    installRow.style.display = gpuInstallRunning ? "none" : "block";
-    return;
-  }
-  installRow.style.display = "none";
-  if (computeStatus.lastActualDevice === "cuda") {
-    el.textContent = t("settings.model.computeUsingGpu");
-    return;
-  }
-  if (computeStatus.lastActualDevice === "cpu") {
-    el.textContent = t("settings.model.computeUsingCpu");
-    return;
-  }
-  if (computeStatus.gpuAvailable === false) {
-    el.textContent = t("settings.model.computeNoGpu");
-    return;
-  }
-  el.textContent = "";
-}
-
-let checkConfirmationTimer = null;
-
-// Se lo stato risultante e' identico a quello di prima (es. GPU gia' in uso
-// sia prima che dopo), il testo non cambierebbe e sembrerebbe che il
-// pulsante "Verifica" non abbia fatto nulla: mostriamo una conferma
-// esplicita per un paio di secondi, indipendentemente dall'esito.
-window.whisperPill.onComputeStatus((status) => {
-  const wasManualCheck = computeChecking;
-  computeStatus = status;
-  computeChecking = false;
-  renderComputeStatus();
-  if (wasManualCheck) {
-    const el = byId("compute-status-note");
-    if (el.textContent) el.textContent = `✓ ${el.textContent}`;
-    clearTimeout(checkConfirmationTimer);
-    checkConfirmationTimer = setTimeout(renderComputeStatus, 2500);
-  }
-});
-
-byId("compute-check-btn").addEventListener("click", () => {
-  if (computeChecking || gpuInstallRunning) return;
-  computeChecking = true;
-  renderComputeStatus();
-  window.whisperPill.checkCompute();
-});
-
-byId("gpu-install-btn").addEventListener("click", () => {
-  if (gpuInstallRunning) return;
-  gpuInstallRunning = true;
-  renderComputeStatus();
-  const btn = byId("gpu-install-btn");
-  btn.disabled = true;
-  btn.textContent = t("settings.model.computeInstalling");
-  const logEl = byId("gpu-install-log");
-  logEl.textContent = "";
-  logEl.style.display = "block";
-  window.whisperPill.installGpuLibs();
-});
-
-window.whisperPill.onGpuInstallLog((line) => {
-  const logEl = byId("gpu-install-log");
-  logEl.textContent += line + "\n";
-  logEl.scrollTop = logEl.scrollHeight;
-});
-
-window.whisperPill.onGpuInstallDone((result) => {
-  gpuInstallRunning = false;
-  renderComputeStatus();
-  const btn = byId("gpu-install-btn");
-  btn.disabled = false;
-  btn.textContent = t("settings.model.computeInstallBtn");
-  if (!result.success) {
-    byId("gpu-install-log").textContent += `\n${t("settings.model.computeInstallFailed")}\n`;
-  }
-});
 
 window.onLanguageChanged = () => {
   if (!config) return;
   byId("models-desc").innerHTML = t("settings.models.desc", { path: '<span class="mono">whisper-ai/models</span>' });
   renderModelsManageList();
-  renderComputeStatus();
   const defaultOpt = byId("mic-select").querySelector('option[value=""]');
   if (defaultOpt) defaultOpt.textContent = t("settings.mic.default");
 };
@@ -236,13 +137,6 @@ document.querySelectorAll("#model-size .seg-pill").forEach((el) => {
   el.addEventListener("click", () => {
     renderSegPills("model-size", el.dataset.value);
     patchConfig({ modelSize: el.dataset.value });
-  });
-});
-
-document.querySelectorAll("#compute-device .seg-pill").forEach((el) => {
-  el.addEventListener("click", () => {
-    renderSegPills("compute-device", el.dataset.value);
-    patchConfig({ computeDevice: el.dataset.value });
   });
 });
 

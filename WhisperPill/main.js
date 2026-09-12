@@ -5,7 +5,7 @@ const { exec } = require("child_process");
 const { store, defaults } = require("./config");
 const { SttBridge, MODEL_SIZES, anyModelDownloaded } = require("./sttBridge");
 const { HotkeyEngine } = require("./hotkeys");
-const { whisperEnvironmentExists, setupScriptExists, runSetup, installGpuSupport, SETUP_SCRIPT } = require("./setupRunner");
+const { whisperEnvironmentExists, setupScriptExists, runSetup, SETUP_SCRIPT } = require("./setupRunner");
 const { DICTS, translate } = require("./i18n");
 
 const PILL_WIDTH = 560;
@@ -22,15 +22,6 @@ const sttBridge = new SttBridge();
 let currentState = { kind: "idle" };
 let hideTimer = null;
 let recordingStartedAt = null;
-
-// Stato del motore di calcolo (CPU/GPU) riportato dal backend Python, usato
-// dalle Impostazioni per mostrare se la GPU e' davvero disponibile/in uso.
-let computeStatus = { gpuAvailable: null, lastActualDevice: null, fallbackMessage: null };
-function sendComputeStatus() {
-  if (settingsWindow && !settingsWindow.isDestroyed()) {
-    settingsWindow.webContents.send("compute:status", computeStatus);
-  }
-}
 
 // store.store legge solo cio' che e' effettivamente salvato su disco: per le
 // installazioni esistenti create prima dell'aggiunta di un default (es.
@@ -75,7 +66,6 @@ function applySttConfig() {
     language: cfg.language,
     model: cfg.modelSize,
     device: cfg.micDevice,
-    computeDevice: cfg.computeDevice,
   });
 }
 
@@ -334,18 +324,6 @@ sttBridge.on("message", (msg) => {
     case "model_deleted":
       broadcastToManagers("models:deleted", { model: msg.model });
       break;
-    case "ready":
-      computeStatus.gpuAvailable = !!msg.gpuAvailable;
-      sendComputeStatus();
-      break;
-    case "model_ready":
-      computeStatus.lastActualDevice = msg.device || null;
-      sendComputeStatus();
-      break;
-    case "gpu_fallback":
-      computeStatus.fallbackMessage = msg.message || "";
-      sendComputeStatus();
-      break;
     default:
       break;
   }
@@ -565,13 +543,7 @@ ipcMain.handle("config:set", (_e, patch) => {
 
   if (patch.theme) applyThemeSource();
   if ("launchAtStartup" in patch) applyLoginItem();
-  if (patch.language || patch.modelSize || "micDevice" in patch || patch.computeDevice) applySttConfig();
-  if (patch.computeDevice) {
-    // Il vecchio esito (riuscito o fallback) non e' piu' valido finche' il
-    // backend non ricarica il modello con la nuova preferenza.
-    computeStatus.fallbackMessage = null;
-    sendComputeStatus();
-  }
+  if (patch.language || patch.modelSize || "micDevice" in patch) applySttConfig();
   if (patch.activationMode) updateHotkeyReservation();
   if (patch.uiLanguage) broadcastI18n();
 
@@ -581,35 +553,6 @@ ipcMain.handle("config:set", (_e, patch) => {
 ipcMain.handle("i18n:get", () => getI18nPayload());
 
 ipcMain.handle("app:getVersion", () => app.getVersion());
-
-ipcMain.handle("system:getComputeStatus", () => computeStatus);
-
-let gpuInstallRunning = false;
-ipcMain.on("gpu:installLibs", (event) => {
-  if (gpuInstallRunning) return;
-  gpuInstallRunning = true;
-  const win = BrowserWindow.fromWebContents(event.sender);
-  const emitter = installGpuSupport();
-  emitter.on("line", (line) => {
-    if (win && !win.isDestroyed()) win.webContents.send("gpu:installLog", line);
-  });
-  emitter.on("done", (result) => {
-    gpuInstallRunning = false;
-    if (win && !win.isDestroyed()) win.webContents.send("gpu:installDone", result);
-    if (result.success) {
-      // Non aspettare la prossima dettatura per sapere se e' andata bene:
-      // il backend riprova subito il caricamento e aggiorna computeStatus.
-      sttBridge.reloadModel();
-    }
-  });
-});
-
-// Verifica esplicita (pulsante "Verifica" in Impostazioni): forza subito un
-// tentativo di caricamento con la preferenza attuale, cosi' l'utente vede lo
-// stato reale senza dover prima dettare qualcosa.
-ipcMain.on("compute:check", () => {
-  sttBridge.reloadModel();
-});
 
 ipcMain.handle("devices:list", () => {
   sttBridge.listDevices();

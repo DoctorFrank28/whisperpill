@@ -79,8 +79,8 @@ class SttBridge extends EventEmitter {
     }
   }
 
-  setConfig({ language, model, device, computeDevice }) {
-    this._send({ cmd: "config", language, model, device, computeDevice });
+  setConfig({ language, model, device }) {
+    this._send({ cmd: "config", language, model, device });
   }
 
   listDevices() {
@@ -109,10 +109,6 @@ class SttBridge extends EventEmitter {
 
   abort() {
     this._send({ cmd: "abort" });
-  }
-
-  reloadModel() {
-    this._send({ cmd: "reload_model" });
   }
 
   shutdown() {
