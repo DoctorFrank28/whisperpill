@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, screen, clipboard, nativeTheme, nativeImage, dialog } = require("electron");
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen, clipboard, nativeTheme, nativeImage, dialog, globalShortcut } = require("electron");
 const path = require("path");
 const { exec } = require("child_process");
 
@@ -43,6 +43,25 @@ function applyThemeSource() {
 function applyLoginItem() {
   const cfg = getConfig();
   app.setLoginItemSettings({ openAtLogin: !!cfg.launchAtStartup });
+}
+
+// uiohook osserva i tasti ma non li "consuma": senza questo, la combinazione
+// arriverebbe anche all'app in primo piano (es. inserendo uno spazio in un
+// editor). Registrarla anche con globalShortcut la riserva a livello di
+// sistema (RegisterHotKey su Windows), impedendole di raggiungere le altre
+// finestre - il rilascio del tasto per il push-to-talk resta gestito da uiohook.
+function updateHotkeyReservation() {
+  globalShortcut.unregisterAll();
+  const cfg = getConfig();
+  if (cfg.activationMode === "trayOnly") return;
+  try {
+    const ok = globalShortcut.register(cfg.shortcut, () => {});
+    if (!ok) console.warn(`[hotkeys] impossibile riservare "${cfg.shortcut}" (gia' in uso da un'altra app?)`);
+  } catch (_) {
+    // Combinazione non esprimibile come accelerator Electron (es. include un
+    // tasto freccia): uiohook continua comunque a gestire l'attivazione,
+    // solo senza la riserva a livello di sistema operativo.
+  }
 }
 
 function createPillWindow() {
@@ -91,9 +110,15 @@ function sendPillState(state) {
 }
 
 function showPill() {
-  if (pillWindow && !pillWindow.isVisible()) {
+  if (!pillWindow) return;
+  // Ri-asserire alwaysOnTop e portarla in cima ad ogni comparsa: dopo un hide()
+  // Windows a volte lascia la finestra dietro ad app che hanno preso il focus
+  // nel frattempo, anche se il flag alwaysOnTop era gia' impostato.
+  pillWindow.setAlwaysOnTop(true, "screen-saver");
+  if (!pillWindow.isVisible()) {
     pillWindow.showInactive();
   }
+  pillWindow.moveTop();
 }
 
 function hidePill() {
@@ -432,6 +457,7 @@ ipcMain.handle("config:set", (_e, patch) => {
   if (patch.theme) applyThemeSource();
   if ("launchAtStartup" in patch) applyLoginItem();
   if (patch.language || patch.modelSize || "micDevice" in patch) applySttConfig();
+  if (patch.activationMode) updateHotkeyReservation();
 
   return getConfig();
 });
@@ -451,6 +477,7 @@ ipcMain.on("models:delete", (_e, size) => sttBridge.deleteModel(size));
 ipcMain.on("shortcut:beginCapture", (event) => {
   hotkeys.captureNextCombo((accelerator) => {
     store.set("shortcut", accelerator);
+    updateHotkeyReservation();
     if (settingsWindow && !settingsWindow.isDestroyed()) {
       settingsWindow.webContents.send("shortcut:captured", accelerator);
     }
@@ -489,6 +516,7 @@ app.whenReady().then(async () => {
       if (pillWindow && pillWindow.isVisible()) hidePill();
     },
   });
+  updateHotkeyReservation();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createPillWindow();
@@ -502,5 +530,6 @@ app.on("window-all-closed", (e) => {
 
 app.on("before-quit", () => {
   if (hotkeys) hotkeys.destroy();
+  globalShortcut.unregisterAll();
   sttBridge.shutdown();
 });

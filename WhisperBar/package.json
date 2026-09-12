@@ -27,6 +27,7 @@
       "config.js",
       "hotkeys.js",
       "sttBridge.js",
+      "setupRunner.js",
       "renderer/**/*",
       "assets/**/*",
       "package.json"
