@@ -121,6 +121,9 @@ document.getElementById("btn-expand").addEventListener("click", () => window.whi
 document.getElementById("result-preview").addEventListener("click", () => window.whisperBar.requestExpand());
 document.getElementById("btn-collapse").addEventListener("click", () => window.whisperBar.requestCollapse());
 document.getElementById("btn-close").addEventListener("click", () => window.whisperBar.requestClose());
+document.querySelectorAll(".btn-dismiss").forEach((btn) => {
+  btn.addEventListener("click", () => window.whisperBar.requestClose());
+});
 
 // Il BrowserWindow copre un'area trasparente piu' grande della pillola visibile:
 // ignoriamo i click fuori dalla card cosi' i clic raggiungono le finestre sottostanti.
